@@ -1,17 +1,30 @@
 import { motion } from 'framer-motion';
+import type { IntakeFormData } from '../types';
 
 interface SuccessScreenProps {
   patientName: string;
+  data: IntakeFormData;
   onReset: () => void;
 }
 
-export function SuccessScreen({ patientName, onReset }: SuccessScreenProps) {
+export function SuccessScreen({ patientName, data, onReset }: SuccessScreenProps) {
+  // Build a concise doctor-facing summary
+  const summaryRows: { label: string; value: string }[] = [
+    { label: 'Hair loss onset', value: data.age_hair_loss_began ? `Age ${data.age_hair_loss_began}` : '—' },
+    { label: 'Duration', value: data.duration || '—' },
+    { label: 'Pattern', value: data.pattern.length > 0 ? data.pattern.join(', ') : '—' },
+    { label: 'Family history', value: data.family_history.length > 0 ? data.family_history.join(', ') : '—' },
+    { label: 'Conditions', value: data.diagnosed_conditions.length > 0 ? data.diagnosed_conditions.join(', ') : '—' },
+    { label: 'Sample', value: data.sample_type || '—' },
+  ];
+
   return (
     <motion.div
       className="welcome"
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5 }}
+      style={{ justifyContent: 'flex-start', paddingTop: 40 }}
     >
       <motion.div
         style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}
@@ -29,14 +42,42 @@ export function SuccessScreen({ patientName, onReset }: SuccessScreenProps) {
       </h1>
 
       <p className="welcome__subtitle">
-        Your intake form has been submitted. Your doctor will review your responses before your consultation.
+        Your intake form has been submitted successfully.
       </p>
 
+      {/* Doctor summary card */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        style={{ width: '100%', maxWidth: 360 }}
+      >
+        <div style={{
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 'var(--radius-lg)',
+          padding: '20px',
+          textAlign: 'left',
+          boxShadow: 'var(--shadow-elevated)',
+        }}>
+          <p style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>
+            Your profile summary
+          </p>
+          {summaryRows.map((row) => (
+            <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '6px 0', gap: 12 }}>
+              <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', flexShrink: 0 }}>{row.label}</span>
+              <span style={{ fontSize: '0.82rem', color: 'var(--text-primary)', textAlign: 'right', fontWeight: 500, wordBreak: 'break-word' }}>{row.value}</span>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* What happens next */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
-        style={{ width: '100%', maxWidth: 320, marginTop: 16 }}
+        style={{ width: '100%', maxWidth: 360, marginTop: 16 }}
       >
         <div style={{
           background: 'var(--bg-card)',

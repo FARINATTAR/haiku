@@ -14,6 +14,7 @@ import { YesNoToggle } from './questions/YesNoToggle';
 import { HabitsTable } from './questions/HabitsTable';
 import { ProductTable } from './questions/ProductTable';
 import { ProcedureTable } from './questions/ProcedureTable';
+import { ScalpPhotoUpload } from './questions/ScalpPhotoUpload';
 import { VoiceButton } from './ui/VoiceButton';
 
 const REVIEW_STEP = 17;
@@ -48,6 +49,7 @@ export function IntakeForm() {
   const { data, currentStep, setField, setNested, toggleArrayItem, setStep, reset } = useFormState();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [direction, setDirection] = useState(1);
+  const [scalpPhoto, setScalpPhoto] = useState<File | null>(null);
 
   // Build the active question list, skipping Q6/Q7 for non-female
   const questionList = useMemo(() => {
@@ -317,7 +319,7 @@ export function IntakeForm() {
         return (
           <SingleSelect
             options={[
-              { value: 'Saliva', label: 'Saliva sample' },
+              { value: 'Saliva', label: 'Saliva sample · Recommended' },
               { value: 'Blood', label: 'Blood sample' },
               { value: 'Either', label: 'Either is fine' },
             ]}
@@ -446,20 +448,30 @@ export function IntakeForm() {
 
           {/* Review (not submitted) */}
           {currentStep === REVIEW_STEP && !isSubmitted && (
-            <ReviewScreen
-              data={data}
-              onBack={goBack}
-              onSubmit={() => {
-                console.log('Final form data:', JSON.stringify(buildOutput(data), null, 2));
-                setIsSubmitted(true);
-              }}
-            />
+            <>
+              <div style={{ marginBottom: 20 }}>
+                <p className="section-header__step">Optional</p>
+                <h2 className="question__label" style={{ fontSize: '1.1rem', marginBottom: 6 }}>Upload a scalp photo</h2>
+                <p className="question__subtitle" style={{ marginBottom: 12 }}>Helps your doctor assess your condition before the visit</p>
+                <ScalpPhotoUpload onPhotoChange={setScalpPhoto} currentPhoto={scalpPhoto} />
+              </div>
+              <ReviewScreen
+                data={data}
+                onBack={goBack}
+                onSubmit={() => {
+                  console.log('Final form data:', JSON.stringify(buildOutput(data), null, 2));
+                  if (scalpPhoto) console.log('Scalp photo attached:', scalpPhoto.name);
+                  setIsSubmitted(true);
+                }}
+              />
+            </>
           )}
 
           {/* Success */}
           {currentStep === REVIEW_STEP && isSubmitted && (
             <SuccessScreen
               patientName={data.patient_name}
+              data={data}
               onReset={() => {
                 reset();
                 setIsSubmitted(false);

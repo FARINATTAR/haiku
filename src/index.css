@@ -781,6 +781,70 @@ body {
   }
 }
 
+/* Photo upload */
+.photo-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2xl) var(--space-lg);
+  border: 2px dashed var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  text-align: center;
+  transition: border-color var(--transition-fast);
+}
+
+.photo-upload:hover {
+  border-color: var(--accent);
+}
+
+.photo-upload__icon {
+  margin-bottom: var(--space-md);
+}
+
+.photo-upload__text {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.photo-upload__hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.photo-preview {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-elevated);
+}
+
+.photo-preview__img {
+  width: 100%;
+  max-height: 280px;
+  object-fit: cover;
+  display: block;
+  border-radius: var(--radius-lg);
+}
+
+.photo-preview__remove {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  padding: 6px 14px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-family: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* Desktop */
 @media (min-width: 640px) {
   .app-shell {
