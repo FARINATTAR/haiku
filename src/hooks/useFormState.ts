@@ -1,6 +1,8 @@
-import { useReducer, useCallback } from 'react';
+import { useReducer, useCallback, useEffect } from 'react';
 import type { IntakeFormData, FormStep } from '../types';
 import { INITIAL_FORM_DATA } from '../lib/formConfig';
+
+const STORAGE_KEY = 'genoroot_intake_draft';
 
 type FormAction =
   | { type: 'SET_FIELD'; field: string; value: unknown }
@@ -12,6 +14,39 @@ type FormAction =
 interface FormState {
   data: IntakeFormData;
   currentStep: FormStep;
+}
+
+// Try to load saved draft from localStorage
+function loadDraft(): FormState | null {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved) as FormState;
+      // Basic validation: check if it has the expected shape
+      if (parsed.data && typeof parsed.currentStep === 'number') {
+        return parsed;
+      }
+    }
+  } catch {
+    // Ignore parse errors
+  }
+  return null;
+}
+
+function saveDraft(state: FormState) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch {
+    // Ignore quota errors
+  }
+}
+
+function clearDraft() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // Ignore
+  }
 }
 
 function formReducer(state: FormState, action: FormAction): FormState {
@@ -53,6 +88,7 @@ function formReducer(state: FormState, action: FormAction): FormState {
       return { ...state, currentStep: action.step };
 
     case 'RESET':
+      clearDraft();
       return { data: { ...INITIAL_FORM_DATA }, currentStep: 0 };
 
     default:
@@ -60,11 +96,19 @@ function formReducer(state: FormState, action: FormAction): FormState {
   }
 }
 
+function getInitialState(): FormState {
+  const draft = loadDraft();
+  if (draft) return draft;
+  return { data: { ...INITIAL_FORM_DATA }, currentStep: 0 };
+}
+
 export function useFormState() {
-  const [state, dispatch] = useReducer(formReducer, {
-    data: { ...INITIAL_FORM_DATA },
-    currentStep: 0,
-  });
+  const [state, dispatch] = useReducer(formReducer, undefined, getInitialState);
+
+  // Auto-save to localStorage on every state change
+  useEffect(() => {
+    saveDraft(state);
+  }, [state]);
 
   const setField = useCallback(
     (field: string, value: unknown) => {
