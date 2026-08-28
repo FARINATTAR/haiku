@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFormState } from '../hooks/useFormState';
 import type { FormStep, IntakeFormData, FamilyHistory, DiagnosedCondition, Duration, HairLossPattern, MenstrualCycle, PregnancyRelated, SampleType } from '../types';
@@ -5,6 +6,7 @@ import { SECTIONS, QUESTION_LABELS, QUESTION_SUBTITLES } from '../lib/formConfig
 import { ProgressBar } from './ProgressBar';
 import { WelcomeScreen } from './WelcomeScreen';
 import { ReviewScreen } from './ReviewScreen';
+import { SuccessScreen } from './SuccessScreen';
 import { NumberInput } from './questions/NumberInput';
 import { SingleSelect } from './questions/SingleSelect';
 import { MultiSelect } from './questions/MultiSelect';
@@ -12,6 +14,7 @@ import { YesNoToggle } from './questions/YesNoToggle';
 import { HabitsTable } from './questions/HabitsTable';
 import { ProductTable } from './questions/ProductTable';
 import { ProcedureTable } from './questions/ProcedureTable';
+import { VoiceButton } from './ui/VoiceButton';
 
 const STEP_ORDER: FormStep[] = ['welcome', 'A', 'B', 'C', 'D', 'E', 'review'];
 
@@ -31,7 +34,8 @@ const slideVariants = {
 };
 
 export function IntakeForm() {
-  const { data, currentStep, setField, setNested, toggleArrayItem, setStep } = useFormState();
+  const { data, currentStep, setField, setNested, toggleArrayItem, setStep, reset } = useFormState();
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const currentIndex = STEP_ORDER.indexOf(currentStep);
 
@@ -275,6 +279,12 @@ export function IntakeForm() {
                     value={data.past_treatment_side_effects_describe || ''}
                     onChange={(e) => setField('past_treatment_side_effects_describe', e.target.value)}
                   />
+                  <VoiceButton
+                    onResult={(text) => {
+                      const current = data.past_treatment_side_effects_describe || '';
+                      setField('past_treatment_side_effects_describe', current ? `${current} ${text}` : text);
+                    }}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -390,13 +400,23 @@ export function IntakeForm() {
             />
           )}
 
-          {currentStep === 'review' && (
+          {currentStep === 'review' && !isSubmitted && (
             <ReviewScreen
               data={data}
               onBack={goBack}
               onSubmit={() => {
-                alert('Form submitted! Check console for JSON output.');
                 console.log('Final form data:', JSON.stringify(buildOutput(data), null, 2));
+                setIsSubmitted(true);
+              }}
+            />
+          )}
+
+          {currentStep === 'review' && isSubmitted && (
+            <SuccessScreen
+              patientName={data.patient_name}
+              onReset={() => {
+                reset();
+                setIsSubmitted(false);
               }}
             />
           )}
