@@ -408,6 +408,14 @@ export function IntakeForm() {
           <span className="header__logo">GenoRoot</span>
           <span className="header__badge">Hair & Scalp</span>
         </div>
+        {currentStep >= 1 && currentStep <= 16 && (() => {
+          // Estimate remaining time: simple questions ~8s, complex ~25s
+          const COMPLEX_QUESTIONS = [11, 12, 13]; // habits, products, procedures
+          const remaining = questionList.filter(q => questionList.indexOf(q) >= questionList.indexOf(currentStep));
+          const seconds = remaining.reduce((sum, q) => sum + (COMPLEX_QUESTIONS.includes(q) ? 25 : 8), 0);
+          const mins = Math.max(1, Math.ceil(seconds / 60));
+          return <span className="time-badge">~{mins} min left</span>;
+        })()}
       </div>
 
       {/* Progress */}

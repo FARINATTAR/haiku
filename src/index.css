@@ -99,6 +99,9 @@ body {
   padding: var(--space-lg) 0 var(--space-md);
   position: relative;
   z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .header__brand {
