@@ -128,6 +128,41 @@ body {
   letter-spacing: 0.05em;
 }
 
+.header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.lang-toggle {
+  display: inline-flex;
+  align-items: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  padding: 2px;
+  box-shadow: var(--shadow-card);
+}
+
+.lang-toggle__btn {
+  border: none;
+  background: transparent;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-family: inherit;
+}
+
+.lang-toggle__btn--active {
+  background: var(--accent);
+  color: white;
+  font-weight: 600;
+}
+
 /* Progress bar */
 .progress-container {
   display: flex;

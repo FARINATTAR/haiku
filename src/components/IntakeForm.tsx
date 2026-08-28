@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFormState } from '../hooks/useFormState';
 import type { IntakeFormData, FamilyHistory, DiagnosedCondition, Duration, HairLossPattern, MenstrualCycle, PregnancyRelated, SampleType } from '../types';
-import { SECTIONS, QUESTION_LABELS, QUESTION_SUBTITLES, QUESTION_HELPERS } from '../lib/formConfig';
+import { SECTIONS, QUESTION_LABELS, QUESTION_SUBTITLES, QUESTION_HELPERS, QUESTION_LABELS_HINGLISH, QUESTION_SUBTITLES_HINGLISH, QUESTION_HELPERS_HINGLISH } from '../lib/formConfig';
 import { ProgressBar } from './ProgressBar';
 import { WelcomeScreen } from './WelcomeScreen';
 import { ReviewScreen } from './ReviewScreen';
@@ -50,6 +50,7 @@ export function IntakeForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [direction, setDirection] = useState(1);
   const [scalpPhoto, setScalpPhoto] = useState<File | null>(null);
+  const [lang, setLang] = useState<'en' | 'hi'>('en');
 
   // Build the active question list, skipping Q6/Q7 for non-female
   const questionList = useMemo(() => {
@@ -359,9 +360,9 @@ export function IntakeForm() {
 
   const renderQuestionScreen = (qNum: number) => {
     const section = getSectionForQuestion(qNum);
-    const label = QUESTION_LABELS[qNum];
-    const subtitle = QUESTION_SUBTITLES[qNum];
-    const helper = QUESTION_HELPERS[qNum];
+    const label = lang === 'hi' ? (QUESTION_LABELS_HINGLISH[qNum] || QUESTION_LABELS[qNum]) : QUESTION_LABELS[qNum];
+    const subtitle = lang === 'hi' ? (QUESTION_SUBTITLES_HINGLISH[qNum] || QUESTION_SUBTITLES[qNum]) : QUESTION_SUBTITLES[qNum];
+    const helper = lang === 'hi' ? (QUESTION_HELPERS_HINGLISH[qNum] || QUESTION_HELPERS[qNum]) : QUESTION_HELPERS[qNum];
     const isLastQuestion = questionList.indexOf(qNum) === questionList.length - 1;
 
     return (
@@ -392,10 +393,10 @@ export function IntakeForm() {
         {/* Navigation */}
         <div className="nav-bar">
           <button className="btn btn--secondary" onClick={goBack} type="button">
-            Back
+            {lang === 'hi' ? 'Peeche' : 'Back'}
           </button>
           <button className="btn btn--primary" onClick={goNext} type="button">
-            {isLastQuestion ? 'Review' : 'Next'}
+            {isLastQuestion ? (lang === 'hi' ? 'Review Karein' : 'Review') : (lang === 'hi' ? 'Aage' : 'Next')}
           </button>
         </div>
       </>
@@ -410,14 +411,32 @@ export function IntakeForm() {
           <span className="header__logo">GenoRoot</span>
           <span className="header__badge">Hair & Scalp</span>
         </div>
-        {currentStep >= 1 && currentStep <= 16 && (() => {
-          // Estimate remaining time: simple questions ~8s, complex ~25s
-          const COMPLEX_QUESTIONS = [11, 12, 13]; // habits, products, procedures
-          const remaining = questionList.filter(q => questionList.indexOf(q) >= questionList.indexOf(currentStep));
-          const seconds = remaining.reduce((sum, q) => sum + (COMPLEX_QUESTIONS.includes(q) ? 25 : 8), 0);
-          const mins = Math.max(1, Math.ceil(seconds / 60));
-          return <span className="time-badge">~{mins} min left</span>;
-        })()}
+        <div className="header__actions">
+          <div className="lang-toggle">
+            <button
+              className={`lang-toggle__btn ${lang === 'en' ? 'lang-toggle__btn--active' : ''}`}
+              onClick={() => setLang('en')}
+              type="button"
+            >
+              EN
+            </button>
+            <button
+              className={`lang-toggle__btn ${lang === 'hi' ? 'lang-toggle__btn--active' : ''}`}
+              onClick={() => setLang('hi')}
+              type="button"
+            >
+              Hinglish
+            </button>
+          </div>
+          {currentStep >= 1 && currentStep <= 16 && (() => {
+            // Estimate remaining time: simple questions ~8s, complex ~25s
+            const COMPLEX_QUESTIONS = [11, 12, 13]; // habits, products, procedures
+            const remaining = questionList.filter(q => questionList.indexOf(q) >= questionList.indexOf(currentStep));
+            const seconds = remaining.reduce((sum, q) => sum + (COMPLEX_QUESTIONS.includes(q) ? 25 : 8), 0);
+            const mins = Math.max(1, Math.ceil(seconds / 60));
+            return <span className="time-badge">~{mins} min left</span>;
+          })()}
+        </div>
       </div>
 
       {/* Progress */}
