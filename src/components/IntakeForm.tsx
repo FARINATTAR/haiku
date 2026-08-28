@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFormState } from '../hooks/useFormState';
 import type { IntakeFormData, FamilyHistory, DiagnosedCondition, Duration, HairLossPattern, MenstrualCycle, PregnancyRelated, SampleType } from '../types';
-import { SECTIONS, QUESTION_LABELS, QUESTION_SUBTITLES } from '../lib/formConfig';
+import { SECTIONS, QUESTION_LABELS, QUESTION_SUBTITLES, QUESTION_HELPERS } from '../lib/formConfig';
 import { ProgressBar } from './ProgressBar';
 import { WelcomeScreen } from './WelcomeScreen';
 import { ReviewScreen } from './ReviewScreen';
@@ -345,6 +345,7 @@ export function IntakeForm() {
     const section = getSectionForQuestion(qNum);
     const label = QUESTION_LABELS[qNum];
     const subtitle = QUESTION_SUBTITLES[qNum];
+    const helper = QUESTION_HELPERS[qNum];
     const isLastQuestion = questionList.indexOf(qNum) === questionList.length - 1;
 
     return (
@@ -360,10 +361,17 @@ export function IntakeForm() {
         {subtitle && (
           <p className="question__subtitle">{subtitle}</p>
         )}
+        {helper && (
+          <div className="question__helper">
+            <span className="question__helper-icon">i</span>
+            <span>{helper}</span>
+          </div>
+        )}
 
         <div className="form-content" style={{ marginTop: 8 }}>
           {renderQuestionInput(qNum)}
         </div>
+
 
         {/* Navigation */}
         <div className="nav-bar">

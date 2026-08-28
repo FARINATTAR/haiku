@@ -136,3 +136,15 @@ export const QUESTION_SUBTITLES: Record<number, string> = {
   15: 'For genetic analysis of hair loss factors',
   16: 'Required to proceed with testing',
 };
+
+// Patient-friendly helper text for medical terms
+export const QUESTION_HELPERS: Record<number, string> = {
+  4: 'Look in the mirror — where do you see the most change? Crown is the top-back area of your head.',
+  5: 'If a doctor ever told you about any of these in a test report or check-up, select it here.',
+  9: 'For example, thick hair on the upper lip, chin, or chest area.',
+  11: 'Hard water is water that leaves white residue on taps or makes hair feel dry and rough after washing.',
+  12: 'Minoxidil is a hair-growth liquid/foam — common brands include Tugain, Morr, Rogaine.',
+  13: 'PRP/GFC means blood is drawn and processed, then injected into the scalp to help hair growth.',
+  15: 'Saliva is painless — just spit into a tube. Blood requires a small needle prick.',
+};
+
