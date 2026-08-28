@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFormState } from '../hooks/useFormState';
-import type { FormStep, IntakeFormData, FamilyHistory, DiagnosedCondition, Duration, HairLossPattern, MenstrualCycle, PregnancyRelated, SampleType } from '../types';
+import type { IntakeFormData, FamilyHistory, DiagnosedCondition, Duration, HairLossPattern, MenstrualCycle, PregnancyRelated, SampleType } from '../types';
 import { SECTIONS, QUESTION_LABELS, QUESTION_SUBTITLES } from '../lib/formConfig';
 import { ProgressBar } from './ProgressBar';
 import { WelcomeScreen } from './WelcomeScreen';
@@ -16,11 +16,11 @@ import { ProductTable } from './questions/ProductTable';
 import { ProcedureTable } from './questions/ProcedureTable';
 import { VoiceButton } from './ui/VoiceButton';
 
-const STEP_ORDER: FormStep[] = ['welcome', 'A', 'B', 'C', 'D', 'E', 'review'];
+const REVIEW_STEP = 17;
 
 const slideVariants = {
   enter: (direction: number) => ({
-    x: direction > 0 ? 100 : -100,
+    x: direction > 0 ? 80 : -80,
     opacity: 0,
   }),
   center: {
@@ -28,42 +28,66 @@ const slideVariants = {
     opacity: 1,
   },
   exit: (direction: number) => ({
-    x: direction > 0 ? -100 : 100,
+    x: direction > 0 ? -80 : 80,
     opacity: 0,
   }),
 };
 
+// Get the section context for a question number
+function getSectionForQuestion(qNum: number): { id: string; title: string } | null {
+  for (const section of SECTIONS) {
+    const [start, end] = section.questionRange;
+    if (qNum >= start && qNum <= end) {
+      return { id: section.id, title: section.title };
+    }
+  }
+  return null;
+}
+
 export function IntakeForm() {
   const { data, currentStep, setField, setNested, toggleArrayItem, setStep, reset } = useFormState();
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [direction, setDirection] = useState(1);
 
-  const currentIndex = STEP_ORDER.indexOf(currentStep);
+  // Build the active question list, skipping Q6/Q7 for non-female
+  const questionList = useMemo(() => {
+    const list: number[] = [];
+    for (let i = 1; i <= 16; i++) {
+      if ((i === 6 || i === 7) && data.sex !== 'female') continue;
+      list.push(i);
+    }
+    return list;
+  }, [data.sex]);
+
+  const totalQuestions = questionList.length;
 
   const goNext = () => {
-    const nextIndex = currentIndex + 1;
-    if (nextIndex < STEP_ORDER.length) {
-      setStep(STEP_ORDER[nextIndex]);
+    setDirection(1);
+    if (currentStep === 0) {
+      // Welcome → first question
+      setStep(questionList[0]);
+    } else if (currentStep >= 1 && currentStep <= 16) {
+      const idx = questionList.indexOf(currentStep);
+      if (idx < questionList.length - 1) {
+        setStep(questionList[idx + 1]);
+      } else {
+        setStep(REVIEW_STEP);
+      }
     }
   };
 
   const goBack = () => {
-    const prevIndex = currentIndex - 1;
-    if (prevIndex >= 0) {
-      setStep(STEP_ORDER[prevIndex]);
+    setDirection(-1);
+    if (currentStep === REVIEW_STEP) {
+      setStep(questionList[questionList.length - 1]);
+    } else if (currentStep >= 1 && currentStep <= 16) {
+      const idx = questionList.indexOf(currentStep);
+      if (idx > 0) {
+        setStep(questionList[idx - 1]);
+      } else {
+        setStep(0); // back to welcome
+      }
     }
-  };
-
-  const renderQuestion = (num: number) => {
-    const label = QUESTION_LABELS[num];
-    const subtitle = QUESTION_SUBTITLES[num];
-
-    return (
-      <div className="question" key={num}>
-        <h3 className="question__label">{label}</h3>
-        {subtitle && <p className="question__subtitle">{subtitle}</p>}
-        {renderQuestionInput(num)}
-      </div>
-    );
   };
 
   const renderQuestionInput = (num: number) => {
@@ -113,10 +137,7 @@ export function IntakeForm() {
               } else {
                 const without = data.family_history.filter((f) => f !== 'No known family history');
                 if (without.includes(v)) {
-                  setField(
-                    'family_history',
-                    without.filter((f) => f !== v)
-                  );
+                  setField('family_history', without.filter((f) => f !== v));
                 } else {
                   setField('family_history', [...without, v]);
                 }
@@ -164,10 +185,7 @@ export function IntakeForm() {
               } else {
                 const without = data.diagnosed_conditions.filter((f) => f !== 'None');
                 if (without.includes(v)) {
-                  setField(
-                    'diagnosed_conditions',
-                    without.filter((f) => f !== v)
-                  );
+                  setField('diagnosed_conditions', without.filter((f) => f !== v));
                 } else {
                   setField('diagnosed_conditions', [...without, v]);
                 }
@@ -235,28 +253,13 @@ export function IntakeForm() {
         );
 
       case 11:
-        return (
-          <HabitsTable
-            habits={data.habits}
-            onChange={setNested}
-          />
-        );
+        return <HabitsTable habits={data.habits} onChange={setNested} />;
 
       case 12:
-        return (
-          <ProductTable
-            products={data.products}
-            onChange={setNested}
-          />
-        );
+        return <ProductTable products={data.products} onChange={setNested} />;
 
       case 13:
-        return (
-          <ProcedureTable
-            procedures={data.procedures}
-            onChange={setNested}
-          />
-        );
+        return <ProcedureTable procedures={data.procedures} onChange={setNested} />;
 
       case 14:
         return (
@@ -320,9 +323,7 @@ export function IntakeForm() {
             </div>
             <p
               className="consent-card__status"
-              style={{
-                color: data.consent === true ? 'var(--accent)' : 'var(--text-muted)',
-              }}
+              style={{ color: data.consent === true ? 'var(--accent)' : 'var(--text-muted)' }}
             >
               {data.consent === true ? 'Consent given' : 'Tap to agree'}
             </p>
@@ -334,36 +335,42 @@ export function IntakeForm() {
     }
   };
 
-  const renderSectionContent = (sectionId: string) => {
-    const section = SECTIONS.find((s) => s.id === sectionId);
-    if (!section) return null;
-
-    const [start, end] = section.questionRange;
-    const questions: number[] = [];
-
-    for (let i = start; i <= end; i++) {
-      // Skip female-only questions for non-female patients
-      if ((i === 6 || i === 7) && data.sex !== 'female') continue;
-      questions.push(i);
-    }
+  const renderQuestionScreen = (qNum: number) => {
+    const section = getSectionForQuestion(qNum);
+    const label = QUESTION_LABELS[qNum];
+    const subtitle = QUESTION_SUBTITLES[qNum];
+    const isLastQuestion = questionList.indexOf(qNum) === questionList.length - 1;
 
     return (
       <>
-        <div className="section-header">
+        {section && (
           <p className="section-header__step">
-            Section {section.id} of 5
+            {section.title}
           </p>
-          <h2 className="section-header__title">{section.title}</h2>
+        )}
+        <h2 className="question__label" style={{ fontSize: '1.25rem', marginBottom: 6 }}>
+          {label}
+        </h2>
+        {subtitle && (
+          <p className="question__subtitle">{subtitle}</p>
+        )}
+
+        <div className="form-content" style={{ marginTop: 8 }}>
+          {renderQuestionInput(qNum)}
         </div>
 
-        <div className="form-content">
-          {questions.map((q) => renderQuestion(q))}
+        {/* Navigation */}
+        <div className="nav-bar">
+          <button className="btn btn--secondary" onClick={goBack} type="button">
+            Back
+          </button>
+          <button className="btn btn--primary" onClick={goNext} type="button">
+            {isLastQuestion ? 'Review' : 'Next'}
+          </button>
         </div>
       </>
     );
   };
-
-  const direction = 1;
 
   return (
     <div className="app-shell">
@@ -376,7 +383,7 @@ export function IntakeForm() {
       </div>
 
       {/* Progress */}
-      <ProgressBar currentStep={currentStep} />
+      <ProgressBar currentStep={currentStep} totalQuestions={totalQuestions} />
 
       {/* Content */}
       <AnimatePresence mode="wait" custom={direction}>
@@ -387,10 +394,11 @@ export function IntakeForm() {
           initial="enter"
           animate="center"
           exit="exit"
-          transition={{ duration: 0.25, ease: 'easeOut' }}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
           style={{ flex: 1, display: 'flex', flexDirection: 'column' }}
         >
-          {currentStep === 'welcome' && (
+          {/* Welcome */}
+          {currentStep === 0 && (
             <WelcomeScreen
               patientName={data.patient_name}
               sex={data.sex}
@@ -400,7 +408,8 @@ export function IntakeForm() {
             />
           )}
 
-          {currentStep === 'review' && !isSubmitted && (
+          {/* Review (not submitted) */}
+          {currentStep === REVIEW_STEP && !isSubmitted && (
             <ReviewScreen
               data={data}
               onBack={goBack}
@@ -411,7 +420,8 @@ export function IntakeForm() {
             />
           )}
 
-          {currentStep === 'review' && isSubmitted && (
+          {/* Success */}
+          {currentStep === REVIEW_STEP && isSubmitted && (
             <SuccessScreen
               patientName={data.patient_name}
               onReset={() => {
@@ -421,23 +431,10 @@ export function IntakeForm() {
             />
           )}
 
-          {currentStep !== 'welcome' && currentStep !== 'review' && (
-            <>{renderSectionContent(currentStep)}</>
-          )}
+          {/* Question */}
+          {currentStep >= 1 && currentStep <= 16 && renderQuestionScreen(currentStep)}
         </motion.div>
       </AnimatePresence>
-
-      {/* Navigation */}
-      {currentStep !== 'welcome' && currentStep !== 'review' && (
-        <div className="nav-bar">
-          <button className="btn btn--secondary" onClick={goBack} type="button">
-            ← Back
-          </button>
-          <button className="btn btn--primary" onClick={goNext} type="button">
-            {currentStep === 'E' ? 'Review →' : 'Continue →'}
-          </button>
-        </div>
-      )}
     </div>
   );
 }

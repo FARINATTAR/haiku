@@ -53,7 +53,7 @@ function formReducer(state: FormState, action: FormAction): FormState {
       return { ...state, currentStep: action.step };
 
     case 'RESET':
-      return { data: { ...INITIAL_FORM_DATA }, currentStep: 'welcome' };
+      return { data: { ...INITIAL_FORM_DATA }, currentStep: 0 };
 
     default:
       return state;
@@ -63,7 +63,7 @@ function formReducer(state: FormState, action: FormAction): FormState {
 export function useFormState() {
   const [state, dispatch] = useReducer(formReducer, {
     data: { ...INITIAL_FORM_DATA },
-    currentStep: 'welcome' as FormStep,
+    currentStep: 0,
   });
 
   const setField = useCallback(

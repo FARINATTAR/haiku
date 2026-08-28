@@ -126,27 +126,34 @@ body {
 }
 
 /* Progress bar */
-.progress {
+.progress-container {
   display: flex;
-  gap: 4px;
+  align-items: center;
+  gap: var(--space-md);
   padding: var(--space-sm) 0 var(--space-lg);
 }
 
-.progress__segment {
+.progress-bar {
   flex: 1;
   height: 3px;
   border-radius: var(--radius-full);
   background: var(--border-subtle);
-  transition: background var(--transition-normal);
+  overflow: hidden;
 }
 
-.progress__segment--active {
+.progress-bar__fill {
+  height: 100%;
+  border-radius: var(--radius-full);
   background: var(--accent);
 }
 
-.progress__segment--completed {
-  background: var(--accent);
-  opacity: 0.5;
+.progress-bar__label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+  min-width: 50px;
+  text-align: right;
 }
 
 /* Section header */

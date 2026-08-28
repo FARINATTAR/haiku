@@ -1,42 +1,30 @@
 import { motion } from 'framer-motion';
 import type { FormStep } from '../types';
-import { SECTIONS } from '../lib/formConfig';
 
 interface ProgressBarProps {
   currentStep: FormStep;
+  totalQuestions: number;
 }
 
-const STEP_ORDER: FormStep[] = ['welcome', 'A', 'B', 'C', 'D', 'E', 'review'];
+export function ProgressBar({ currentStep, totalQuestions }: ProgressBarProps) {
+  if (currentStep === 0) return null; // welcome screen
 
-export function ProgressBar({ currentStep }: ProgressBarProps) {
-  if (currentStep === 'welcome') return null;
-
-  const currentIndex = STEP_ORDER.indexOf(currentStep);
+  const isReview = currentStep > totalQuestions;
+  const progress = isReview ? 100 : ((currentStep - 1) / totalQuestions) * 100;
 
   return (
-    <div className="progress">
-      {SECTIONS.map((section, i) => {
-        const sectionIndex = i + 1; // offset for 'welcome'
-        let className = 'progress__segment';
-
-        if (sectionIndex < currentIndex) {
-          className += ' progress__segment--completed';
-        } else if (sectionIndex === currentIndex) {
-          className += ' progress__segment--active';
-        }
-
-        return (
-          <motion.div
-            key={section.id}
-            className={className}
-            initial={false}
-            animate={{
-              opacity: 1,
-            }}
-            layout
-          />
-        );
-      })}
+    <div className="progress-container">
+      <div className="progress-bar">
+        <motion.div
+          className="progress-bar__fill"
+          initial={false}
+          animate={{ width: `${progress}%` }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
+        />
+      </div>
+      <span className="progress-bar__label">
+        {isReview ? 'Review' : `${currentStep} of ${totalQuestions}`}
+      </span>
     </div>
   );
 }

@@ -128,5 +128,5 @@ export interface Section {
   questionRange: [number, number]; // [start, end] inclusive
 }
 
-// Step in the form flow
-export type FormStep = 'welcome' | 'A' | 'B' | 'C' | 'D' | 'E' | 'review';
+// Step in the form flow: 0=welcome, 1-16=questions, 17=review
+export type FormStep = number;
