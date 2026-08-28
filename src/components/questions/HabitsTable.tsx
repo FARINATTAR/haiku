@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { HabitsData } from '../../types';
 import { YesNoToggle } from './YesNoToggle';
 import { SingleSelect } from './SingleSelect';
+import { VoiceButton } from '../ui/VoiceButton';
 
 interface HabitsTableProps {
   habits: HabitsData;
@@ -160,14 +161,22 @@ export function HabitsTable({ habits, onChange }: HabitsTableProps) {
                         )}
 
                         {habit.followup.type === 'text' && (
-                          <textarea
-                            className="text-input"
-                            placeholder="e.g., Keratin treatment 3 months ago..."
-                            value={typeof habits[habit.followup.key] === 'string' ? (habits[habit.followup.key] as string) : ''}
-                            onChange={(e) => onChange(['habits', habit.followup!.key], e.target.value)}
-                            rows={2}
-                            style={{ minHeight: 60 }}
-                          />
+                          <>
+                            <textarea
+                              className="text-input"
+                              placeholder="e.g., Keratin treatment 3 months ago..."
+                              value={typeof habits[habit.followup.key] === 'string' ? (habits[habit.followup.key] as string) : ''}
+                              onChange={(e) => onChange(['habits', habit.followup!.key], e.target.value)}
+                              rows={2}
+                              style={{ minHeight: 60 }}
+                            />
+                            <VoiceButton
+                              onResult={(text) => {
+                                const current = typeof habits[habit.followup!.key] === 'string' ? (habits[habit.followup!.key] as string) : '';
+                                onChange(['habits', habit.followup!.key], current ? `${current} ${text}` : text);
+                              }}
+                            />
+                          </>
                         )}
                       </motion.div>
                     )}

@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import type { Sex } from '../types';
+import { VoiceButton } from './ui/VoiceButton';
 
 interface WelcomeScreenProps {
   patientName: string;
@@ -60,6 +61,7 @@ export function WelcomeScreen({
         transition={{ delay: 0.3 }}
         autoFocus
       />
+      <VoiceButton onResult={(text) => onNameChange(text)} />
 
       <motion.div
         initial={{ opacity: 0, y: 10 }}
