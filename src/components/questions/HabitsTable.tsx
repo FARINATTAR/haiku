@@ -13,7 +13,6 @@ interface HabitsTableProps {
 interface HabitConfig {
   key: string;
   label: string;
-  icon: string;
   type: 'yesno' | 'select';
   options?: { value: string; label: string }[];
   followup?: {
@@ -28,7 +27,6 @@ const HABITS: HabitConfig[] = [
   {
     key: 'smoking',
     label: 'Smoking',
-    icon: '🚬',
     type: 'yesno',
     followup: {
       key: 'smoking_severity',
@@ -44,19 +42,16 @@ const HABITS: HabitConfig[] = [
   {
     key: 'alcohol',
     label: 'Alcohol consumption',
-    icon: '🍷',
     type: 'yesno',
   },
   {
     key: 'hard_water',
     label: 'Hard water for hair wash',
-    icon: '🚿',
     type: 'yesno',
   },
   {
     key: 'hair_wash_frequency',
     label: 'Hair wash frequency',
-    icon: '🧴',
     type: 'select',
     options: [
       { value: 'Daily', label: 'Daily' },
@@ -67,13 +62,11 @@ const HABITS: HabitConfig[] = [
   {
     key: 'heating_tools_styling_chemicals',
     label: 'Heating tools or styling chemicals',
-    icon: '💇',
     type: 'yesno',
   },
   {
     key: 'salon_treatments',
     label: 'Salon treatments (keratin, rebonding etc.)',
-    icon: '💈',
     type: 'yesno',
     followup: {
       key: 'salon_treatment_detail',
@@ -107,7 +100,6 @@ export function HabitsTable({ habits, onChange }: HabitsTableProps) {
               onClick={() => setExpandedIndex(isExpanded ? null : i)}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: '1.2rem' }}>{habit.icon}</span>
                 <span className="expand-card__title">{habit.label}</span>
               </div>
               <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', transition: 'transform 200ms' }}>

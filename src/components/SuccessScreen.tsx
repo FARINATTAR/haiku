@@ -14,12 +14,14 @@ export function SuccessScreen({ patientName, onReset }: SuccessScreenProps) {
       transition={{ duration: 0.5 }}
     >
       <motion.div
-        className="welcome__icon"
-        initial={{ scale: 0, rotate: -180 }}
-        animate={{ scale: 1, rotate: 0 }}
+        style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
         transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
       >
-        ✅
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
       </motion.div>
 
       <h1 className="welcome__title">
@@ -42,12 +44,22 @@ export function SuccessScreen({ patientName, onReset }: SuccessScreenProps) {
           borderRadius: 'var(--radius-md)',
           padding: '16px',
           textAlign: 'left',
+          boxShadow: 'var(--shadow-card)',
         }}>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: 8 }}>What happens next?</p>
-          <ul style={{ fontSize: '0.85rem', color: 'var(--text-primary)', listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <li>📋 Doctor reviews your profile</li>
-            <li>🧬 Sample collection at your visit</li>
-            <li>📊 Personalised treatment plan</li>
+          <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: 12, fontWeight: 500 }}>What happens next?</p>
+          <ul style={{ fontSize: '0.85rem', color: 'var(--text-primary)', listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <li style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0 }} />
+              Doctor reviews your profile
+            </li>
+            <li style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0 }} />
+              Sample collection at your visit
+            </li>
+            <li style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0 }} />
+              Personalised treatment plan
+            </li>
           </ul>
         </div>
       </motion.div>

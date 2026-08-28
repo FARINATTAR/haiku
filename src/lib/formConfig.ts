@@ -5,31 +5,31 @@ export const SECTIONS: Section[] = [
   {
     id: 'A',
     title: 'Hair Loss History',
-    icon: '🧬',
+    icon: '',
     questionRange: [1, 4],
   },
   {
     id: 'B',
     title: 'Health & Hormones',
-    icon: '💊',
+    icon: '',
     questionRange: [5, 9],
   },
   {
     id: 'C',
     title: 'Lifestyle',
-    icon: '🌿',
+    icon: '',
     questionRange: [10, 11],
   },
   {
     id: 'D',
     title: 'Treatments',
-    icon: '💉',
+    icon: '',
     questionRange: [12, 14],
   },
   {
     id: 'E',
-    title: 'Consent',
-    icon: '✅',
+    title: 'Sample & Consent',
+    icon: '',
     questionRange: [15, 16],
   },
 ];

@@ -8,13 +8,6 @@ interface ProductTableProps {
   onChange: (path: string[], value: unknown) => void;
 }
 
-const PRODUCT_ICONS: Record<string, string> = {
-  'OTC/Medicated Shampoos': '🧴',
-  'Hair Oils/Serums': '💧',
-  'Topical Minoxidil': '💊',
-  'Oral Minoxidil': '💉',
-  'Supplements': '🌿',
-};
 
 const DURATION_OPTIONS = [
   { value: '<3mo', label: 'Under 3 months' },
@@ -41,7 +34,6 @@ export function ProductTable({ products, onChange }: ProductTableProps) {
               onClick={() => onChange(['products', name, 'used'], !isUsed)}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: '1.2rem' }}>{PRODUCT_ICONS[name] || '📦'}</span>
                 <span className="expand-card__title">{name}</span>
               </div>
               <div

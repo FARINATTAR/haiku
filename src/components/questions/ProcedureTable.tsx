@@ -8,12 +8,6 @@ interface ProcedureTableProps {
   onChange: (path: string[], value: unknown) => void;
 }
 
-const PROCEDURE_ICONS: Record<string, string> = {
-  'PRP/GFC/iPRF': '💉',
-  'Stem Cells/Exosomes': '🧬',
-  'Hair Transplant': '✂️',
-  'Other': '📋',
-};
 
 const SESSION_OPTIONS = [
   { value: '1-3', label: '1–3 sessions' },
@@ -40,7 +34,6 @@ export function ProcedureTable({ procedures, onChange }: ProcedureTableProps) {
               onClick={() => onChange(['procedures', name, 'done'], !isDone)}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: '1.2rem' }}>{PROCEDURE_ICONS[name] || '📋'}</span>
                 <span className="expand-card__title">{name}</span>
               </div>
               <div

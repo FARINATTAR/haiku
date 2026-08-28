@@ -16,9 +16,9 @@ export function VoiceButton({ onResult }: VoiceButtonProps) {
       type="button"
     >
       {isListening ? (
-        <>🔴 {transcript || 'Listening...'}</>
+        <>{transcript || 'Listening...'}</>
       ) : (
-        <>🎙️ Tap to speak</>
+        <>Tap to speak</>
       )}
     </button>
   );

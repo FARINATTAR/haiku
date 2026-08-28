@@ -83,9 +83,9 @@ export function IntakeForm() {
         return (
           <SingleSelect
             options={[
-              { value: 'Less than 6 months', label: 'Under 6 months', icon: '📅' },
-              { value: '6-12 months', label: '6–12 months', icon: '📆' },
-              { value: 'Over a year', label: 'Over a year', icon: '🗓️' },
+              { value: 'Less than 6 months', label: 'Under 6 months' },
+              { value: '6-12 months', label: '6–12 months' },
+              { value: 'Over a year', label: 'Over a year' },
             ]}
             value={data.duration}
             onChange={(v) => setField('duration', v as Duration)}
@@ -96,10 +96,10 @@ export function IntakeForm() {
         return (
           <MultiSelect
             options={[
-              { value: 'Father had hair loss', label: 'Father', icon: '👨' },
-              { value: 'Mother had hair loss', label: 'Mother', icon: '👩' },
-              { value: 'Siblings with thinning or baldness', label: 'Siblings', icon: '👫' },
-              { value: 'No known family history', label: 'None that I know of', icon: '✕' },
+              { value: 'Father had hair loss', label: 'Father' },
+              { value: 'Mother had hair loss', label: 'Mother' },
+              { value: 'Siblings with thinning or baldness', label: 'Siblings' },
+              { value: 'No known family history', label: 'None that I know of' },
             ]}
             selected={data.family_history}
             onToggle={(val) => {
@@ -129,12 +129,12 @@ export function IntakeForm() {
         return (
           <MultiSelect
             options={[
-              { value: 'Receding hairline', label: 'Receding hairline', icon: '📐' },
-              { value: 'Thinning at crown', label: 'Thinning at crown', icon: '🎯' },
-              { value: 'Widening part line', label: 'Widening part', icon: '↔️' },
-              { value: 'Diffuse thinning', label: 'Overall thinning', icon: '🌫️' },
-              { value: 'Patchy loss', label: 'Patchy loss', icon: '🔵' },
-              { value: 'Sudden excessive shedding', label: 'Excessive shedding', icon: '⬇️' },
+              { value: 'Receding hairline', label: 'Receding hairline' },
+              { value: 'Thinning at crown', label: 'Thinning at crown' },
+              { value: 'Widening part line', label: 'Widening part' },
+              { value: 'Diffuse thinning', label: 'Overall thinning' },
+              { value: 'Patchy loss', label: 'Patchy loss' },
+              { value: 'Sudden excessive shedding', label: 'Excessive shedding' },
             ]}
             selected={data.pattern}
             onToggle={(v) => toggleArrayItem('pattern', v as HairLossPattern)}
@@ -223,11 +223,11 @@ export function IntakeForm() {
         return (
           <MultiSelect
             options={[
-              { value: 'Crash dieting or major weight loss', label: 'Crash diet / weight loss', icon: '⚖️' },
-              { value: 'High stress or emotional trauma', label: 'High stress / trauma', icon: '😰' },
-              { value: 'Fever with illness (COVID, Dengue, Typhoid)', label: 'Fever / illness', icon: '🤒' },
-              { value: 'Recent surgery', label: 'Recent surgery', icon: '🏥' },
-              { value: 'Change in location/water/air quality', label: 'Location / water change', icon: '🌍' },
+              { value: 'Crash dieting or major weight loss', label: 'Crash diet / weight loss' },
+              { value: 'High stress or emotional trauma', label: 'High stress / emotional trauma' },
+              { value: 'Fever with illness (COVID, Dengue, Typhoid)', label: 'Fever or illness (COVID, Dengue, Typhoid)' },
+              { value: 'Recent surgery', label: 'Recent surgery' },
+              { value: 'Change in location/water/air quality', label: 'Change in location or water quality' },
             ]}
             selected={data.past_6_months}
             onToggle={(v) => toggleArrayItem('past_6_months', v)}
@@ -295,9 +295,9 @@ export function IntakeForm() {
         return (
           <SingleSelect
             options={[
-              { value: 'Saliva', label: 'Saliva sample', icon: '💧' },
-              { value: 'Blood', label: 'Blood sample', icon: '🩸' },
-              { value: 'Either', label: 'Either is fine', icon: '✅' },
+              { value: 'Saliva', label: 'Saliva sample' },
+              { value: 'Blood', label: 'Blood sample' },
+              { value: 'Either', label: 'Either is fine' },
             ]}
             value={data.sample_type}
             onChange={(v) => setField('sample_type', v as SampleType)}
@@ -321,7 +321,7 @@ export function IntakeForm() {
             <p
               className="consent-card__status"
               style={{
-                color: data.consent === true ? 'var(--accent-teal)' : 'var(--text-muted)',
+                color: data.consent === true ? 'var(--accent)' : 'var(--text-muted)',
               }}
             >
               {data.consent === true ? 'Consent given' : 'Tap to agree'}
@@ -351,7 +351,7 @@ export function IntakeForm() {
       <>
         <div className="section-header">
           <p className="section-header__step">
-            Section {section.id} of 5 · {section.icon}
+            Section {section.id} of 5
           </p>
           <h2 className="section-header__title">{section.title}</h2>
         </div>

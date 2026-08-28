@@ -10,10 +10,10 @@ interface WelcomeScreenProps {
   onContinue: () => void;
 }
 
-const sexOptions: { value: Sex; label: string; icon: string }[] = [
-  { value: 'male', label: 'Male', icon: '👨' },
-  { value: 'female', label: 'Female', icon: '👩' },
-  { value: 'other', label: 'Other', icon: '🧑' },
+const sexOptions: { value: Sex; label: string }[] = [
+  { value: 'male', label: 'Male' },
+  { value: 'female', label: 'Female' },
+  { value: 'other', label: 'Other' },
 ];
 
 export function WelcomeScreen({
@@ -33,15 +33,6 @@ export function WelcomeScreen({
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.4 }}
     >
-      <motion.div
-        className="welcome__icon"
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-      >
-        🧬
-      </motion.div>
-
       <h1 className="welcome__title">
         Let's understand your hair better
       </h1>
@@ -78,7 +69,6 @@ export function WelcomeScreen({
               onClick={() => onSexChange(opt.value)}
               type="button"
             >
-              <span className="chip__icon">{opt.icon}</span>
               {opt.label}
             </button>
           ))}
