@@ -113,6 +113,7 @@ export function IntakeForm() {
             ]}
             value={data.duration}
             onChange={(v) => setField('duration', v as Duration)}
+            onAutoAdvance={goNext}
           />
         );
 
@@ -205,6 +206,7 @@ export function IntakeForm() {
             ]}
             value={data.menstrual_cycle}
             onChange={(v) => setField('menstrual_cycle', v as MenstrualCycle)}
+            onAutoAdvance={goNext}
           />
         );
 
@@ -218,6 +220,7 @@ export function IntakeForm() {
             ]}
             value={data.pregnancy_related}
             onChange={(v) => setField('pregnancy_related', v as PregnancyRelated)}
+            onAutoAdvance={goNext}
           />
         );
 
@@ -226,6 +229,7 @@ export function IntakeForm() {
           <YesNoToggle
             value={data.adult_acne_oily_skin}
             onChange={(v) => setField('adult_acne_oily_skin', v)}
+            onAutoAdvance={goNext}
           />
         );
 
@@ -234,6 +238,7 @@ export function IntakeForm() {
           <YesNoToggle
             value={data.excess_body_facial_hair}
             onChange={(v) => setField('excess_body_facial_hair', v)}
+            onAutoAdvance={goNext}
           />
         );
 
@@ -304,6 +309,7 @@ export function IntakeForm() {
             ]}
             value={data.sample_type}
             onChange={(v) => setField('sample_type', v as SampleType)}
+            onAutoAdvance={goNext}
           />
         );
 
