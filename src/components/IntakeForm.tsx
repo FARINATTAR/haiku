@@ -16,6 +16,7 @@ import { ProductTable } from './questions/ProductTable';
 import { ProcedureTable } from './questions/ProcedureTable';
 import { ScalpPhotoUpload } from './questions/ScalpPhotoUpload';
 import { VoiceButton } from './ui/VoiceButton';
+import { matchVoiceToOption, extractNumberFromVoice } from '../lib/voiceMatcher';
 
 const REVIEW_STEP = 17;
 
@@ -358,6 +359,133 @@ export function IntakeForm() {
     }
   };
 
+  const handleVoiceAnswer = (qNum: number, text: string) => {
+    if (!text) return;
+    switch (qNum) {
+      case 1: {
+        const num = extractNumberFromVoice(text);
+        if (num && num >= 1 && num <= 80) {
+          setField('age_hair_loss_began', num);
+          setTimeout(() => goNext(), 400);
+        }
+        break;
+      }
+      case 2: {
+        const opt = matchVoiceToOption(text, [
+          { value: 'Less than 6 months', label: 'Under 6 months' },
+          { value: '6-12 months', label: '6-12 months' },
+          { value: 'Over a year', label: 'Over a year' },
+        ]);
+        if (opt) {
+          setField('duration', opt as Duration);
+          setTimeout(() => goNext(), 400);
+        }
+        break;
+      }
+      case 3: {
+        const opt = matchVoiceToOption(text, [
+          { value: 'Father had hair loss', label: 'Father' },
+          { value: 'Mother had hair loss', label: 'Mother' },
+          { value: 'Siblings with thinning or baldness', label: 'Siblings' },
+          { value: 'No known family history', label: 'None' },
+        ]);
+        if (opt) {
+          toggleArrayItem('family_history', opt);
+        }
+        break;
+      }
+      case 4: {
+        const opt = matchVoiceToOption(text, [
+          { value: 'Receding hairline', label: 'Receding hairline' },
+          { value: 'Thinning at crown', label: 'Thinning at crown' },
+          { value: 'Widening part line', label: 'Widening part' },
+          { value: 'Diffuse thinning', label: 'Overall thinning' },
+          { value: 'Patchy loss', label: 'Patchy loss' },
+          { value: 'Sudden excessive shedding', label: 'Excessive shedding' },
+        ]);
+        if (opt) {
+          toggleArrayItem('pattern', opt);
+        }
+        break;
+      }
+      case 5: {
+        const opt = matchVoiceToOption(text, [
+          { value: 'PCOS/PCOD', label: 'PCOS PCOD' },
+          { value: 'Thyroid disorder', label: 'Thyroid' },
+          { value: 'Diabetes', label: 'Diabetes' },
+          { value: 'Autoimmune disease', label: 'Autoimmune' },
+          { value: 'Anemia', label: 'Anemia' },
+          { value: 'None', label: 'None' },
+        ]);
+        if (opt) {
+          toggleArrayItem('diagnosed_conditions', opt);
+        }
+        break;
+      }
+      case 6: {
+        const opt = matchVoiceToOption(text, [
+          { value: 'Regular', label: 'Regular' },
+          { value: 'Irregular', label: 'Irregular' },
+          { value: 'Menopausal', label: 'Menopausal' },
+          { value: 'Not applicable', label: 'Not applicable' },
+        ]);
+        if (opt) {
+          setField('menstrual_cycle', opt as MenstrualCycle);
+          setTimeout(() => goNext(), 400);
+        }
+        break;
+      }
+      case 7: {
+        const opt = matchVoiceToOption(text, [
+          { value: 'Currently pregnant', label: 'Currently pregnant' },
+          { value: 'Postpartum <1 year', label: 'Postpartum' },
+          { value: 'Not applicable', label: 'Not applicable' },
+        ]);
+        if (opt) {
+          setField('pregnancy_related', opt as PregnancyRelated);
+          setTimeout(() => goNext(), 400);
+        }
+        break;
+      }
+      case 8: {
+        const isYes = text.toLowerCase().includes('yes') || text.toLowerCase().includes('ha') || text.toLowerCase().includes('haan');
+        const isNo = text.toLowerCase().includes('no') || text.toLowerCase().includes('na') || text.toLowerCase().includes('nahi');
+        if (isYes) { setField('adult_acne_oily_skin', true); setTimeout(() => goNext(), 400); }
+        else if (isNo) { setField('adult_acne_oily_skin', false); setTimeout(() => goNext(), 400); }
+        break;
+      }
+      case 9: {
+        const isYes = text.toLowerCase().includes('yes') || text.toLowerCase().includes('ha') || text.toLowerCase().includes('haan');
+        const isNo = text.toLowerCase().includes('no') || text.toLowerCase().includes('na') || text.toLowerCase().includes('nahi');
+        if (isYes) { setField('excess_body_facial_hair', true); setTimeout(() => goNext(), 400); }
+        else if (isNo) { setField('excess_body_facial_hair', false); setTimeout(() => goNext(), 400); }
+        break;
+      }
+      case 15: {
+        const opt = matchVoiceToOption(text, [
+          { value: 'Saliva', label: 'Saliva' },
+          { value: 'Blood', label: 'Blood' },
+          { value: 'Either', label: 'Either' },
+        ]);
+        if (opt) {
+          setField('sample_type', opt as SampleType);
+          setTimeout(() => goNext(), 400);
+        }
+        break;
+      }
+      case 16: {
+        const isAgree = text.toLowerCase().includes('yes') || text.toLowerCase().includes('agree') || text.toLowerCase().includes('haan') || text.toLowerCase().includes('consent');
+        if (isAgree) {
+          setField('consent', true);
+          setTimeout(() => goNext(), 400);
+        }
+        break;
+      }
+      default:
+        break;
+    }
+  };
+
   const renderQuestionScreen = (qNum: number) => {
     const section = getSectionForQuestion(qNum);
     const label = lang === 'hi' ? (QUESTION_LABELS_HINGLISH[qNum] || QUESTION_LABELS[qNum]) : QUESTION_LABELS[qNum];
@@ -387,6 +515,11 @@ export function IntakeForm() {
 
         <div className="form-content" style={{ marginTop: 8 }}>
           {renderQuestionInput(qNum)}
+          {![11, 12, 13, 14].includes(qNum) && (
+            <div style={{ marginTop: 16, display: 'flex', justifyContent: 'center' }}>
+              <VoiceButton onResult={(text) => handleVoiceAnswer(qNum, text)} />
+            </div>
+          )}
         </div>
 
 
