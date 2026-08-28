@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { haptic } from '../../lib/haptic';
 
 interface MultiSelectProps {
   options: { value: string; label: string; icon?: string }[];
@@ -15,7 +16,7 @@ export function MultiSelect({ options, selected, onToggle }: MultiSelectProps) {
           <motion.button
             key={opt.value}
             className={`chip ${isSelected ? 'chip--selected' : ''}`}
-            onClick={() => onToggle(opt.value)}
+            onClick={() => { haptic(); onToggle(opt.value); }}
             type="button"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}

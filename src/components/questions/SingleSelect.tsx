@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { haptic } from '../../lib/haptic';
 
 interface SingleSelectProps {
   options: { value: string; label: string }[];
@@ -9,6 +10,7 @@ interface SingleSelectProps {
 
 export function SingleSelect({ options, value, onChange, onAutoAdvance }: SingleSelectProps) {
   const handleSelect = (optValue: string) => {
+    haptic();
     onChange(optValue);
     // Auto-advance after a short delay so the user sees the selection
     if (onAutoAdvance) {

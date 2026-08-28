@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { haptic } from '../../lib/haptic';
 
 interface YesNoToggleProps {
   value: boolean | null;
@@ -10,6 +11,7 @@ interface YesNoToggleProps {
 
 export function YesNoToggle({ value, onChange, yesLabel = 'Yes', noLabel = 'No', onAutoAdvance }: YesNoToggleProps) {
   const handleSelect = (val: boolean) => {
+    haptic();
     onChange(val);
     // Auto-advance only if no followup (e.g. "No" on side effects)
     // For "Yes" with followup, IntakeForm won't pass onAutoAdvance
