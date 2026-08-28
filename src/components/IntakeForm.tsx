@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFormState } from '../hooks/useFormState';
 import type { IntakeFormData, FamilyHistory, DiagnosedCondition, Duration, HairLossPattern, MenstrualCycle, PregnancyRelated, SampleType } from '../types';
@@ -61,10 +61,9 @@ export function IntakeForm() {
 
   const totalQuestions = questionList.length;
 
-  const goNext = () => {
+  const goNext = useCallback(() => {
     setDirection(1);
     if (currentStep === 0) {
-      // Welcome → first question
       setStep(questionList[0]);
     } else if (currentStep >= 1 && currentStep <= 16) {
       const idx = questionList.indexOf(currentStep);
@@ -74,7 +73,7 @@ export function IntakeForm() {
         setStep(REVIEW_STEP);
       }
     }
-  };
+  }, [currentStep, questionList, setStep]);
 
   const goBack = () => {
     setDirection(-1);
@@ -85,10 +84,25 @@ export function IntakeForm() {
       if (idx > 0) {
         setStep(questionList[idx - 1]);
       } else {
-        setStep(0); // back to welcome
+        setStep(0);
       }
     }
   };
+
+  // Enter key navigates to next question
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' && currentStep >= 1 && currentStep <= 16) {
+        // Don't trigger if user is typing in a textarea
+        const tag = (e.target as HTMLElement)?.tagName;
+        if (tag === 'TEXTAREA') return;
+        e.preventDefault();
+        goNext();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentStep, goNext]);
 
   const renderQuestionInput = (num: number) => {
     switch (num) {
