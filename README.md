@@ -1,75 +1,42 @@
-# GenoRoot — Smart Hair & Scalp Intake Form
-> Built for Haiku Studio take-home assignment by Farin Attar.
+# GenoRoot hair intake
 
-A patient-first, voice-assisted clinical intake web app for hair & scalp clinics. It turns a tedious 16-question paper form into a fast, guided 2-minute flow on both phone and laptop.
+Patient intake for the Haiku Studio take-home. Six screens fill the 16-question schema. The doctor-facing JSON is on the last screen.
 
----
-
-## 🚀 Quick Start (Run Locally)
+## Run
 
 ```bash
-# 1. Clone repo
-git clone https://github.com/FARINATTAR/haiku.git
-cd haiku
-
-# 2. Install dependencies
 npm install
-
-# 3. Start local dev server
 npm run dev
 ```
-Open `http://localhost:5173` in your browser.
 
-To test mobile responsiveness on your computer, use Chrome DevTools device mode (`Cmd+Shift+M` or `Ctrl+Shift+M` at 375px/390px width).
+Open http://localhost:5173. On a phone, or Chrome DevTools at 390px width. Pinch-zoom is left on — a 55-year-old should be able to enlarge type.
 
----
+## Choices
 
-## 💡 Key Design & Engineering Decisions
+**What the patient sees.** Not 16 next-buttons and not a chat box. Screens are: who this is for → when it started → family + scalp map → health → last 6 months + habits → what they have tried → sample + consent → review JSON.
 
-### 1. Per-Question Interaction Design (No Chatbots)
-A chat interface where patients have to type out medical history or wait on slow LLM streaming adds friction, especially for older patients. Instead, each question has an interaction tailored to the data it collects:
-- **Age onset:** Stepper buttons with one-tap quick-select pills (`18, 21, 25, 28, 32...`).
-- **Duration / Conditions / Pattern:** High-contrast tap cards with **Doctor Note tooltips** explaining jargon (e.g., Alopecia Areata, Ferritin, PCOS).
-- **Lifestyle & Treatments:** Accordion toggle cards for products/procedures with dependent follow-up triggers (duration, helped, side-effects).
-- **Hormonal routing:** Questions 6 & 7 (Menstrual cycle / Pregnancy) automatically skip for male patients based on biological sex selected on screen 1.
+**Per question.** Age is a stepper. Duration is inferred from current age minus onset age, then confirmed. Pattern is a top-view scalp, not a jargon list. Products and procedures stay collapsed behind “have you tried anything?” Habits are one yes/no row each, not accordions.
 
-### 2. Zero-Latency Voice Engine + Hinglish Pattern Matcher
-Instead of routing speech through heavy server-side LLM APIs (which introduces 1-2 second latency and breaks the flow), I used the browser's native **Web Speech API** paired with an offline, deterministic phonetic and alias parser:
-- **Multi-select in one breath:** Saying *"receding hairline and widening part line"* parses and checks both options simultaneously.
-- **Bilingual / Hinglish Support:** Understands colloquial terms like *"papa"*, *"mummy"*, *"kisi ko nahi"*, *"khoon ki kami"*, and auto-selects the right schema value.
-- **Instant visual feedback:** Mic button pulses red while recording, then matches directly to UI state with haptic feedback on mobile.
+**Inference.** PCOS on a female path pre-fills irregular cycle, adult acne, and extra facial hair (they can change it). Sudden shedding offers illness / stress / crash diet as a one-tap confirm. Male path skips cycle and pregnancy. Widening-part is de-emphasized for men.
 
-### 3. Polish & Feel
-- **Haptic Feedback:** Vibrates subtly on tap on supported mobile devices.
-- **Keyboard Navigation:** `Enter` key auto-validates and advances to the next step.
-- **Sticky gradient bottom nav:** Safe-area inset support for iPhone notch/home bar, ensuring buttons never get clipped.
-- **Dynamic time estimate badge:** Updates in real-time (`~2 min left` -> `~1 min left`) so patients know it won't take long.
+**Voice.** Browser Web Speech API (`en-IN`) only where typing is worse: ages, salon detail, side-effect text. Mic is hidden if the browser has no speech recognition (Safari often). No paid STT this week — a clinic waiting room is noisy; taps are the path.
 
----
+**Stack.** React 19, TypeScript, Vite, Framer Motion for screen transitions, CSS tokens. Nothing else. Drafts persist in `localStorage` (`genoroot_intake_draft_v3`). No login, no backend, no API keys.
 
-## 🛠️ Tech Stack & Trade-offs (Built vs. Bought)
+**Schema.** Output keys match `intake-schema.json`. Extra UI state (`current_age`, `tried_products`, `past_6_months_none`) is not in the JSON. Family history does not include a made-up “other relative” option. Q6/Q7 are omitted for non-female patients.
 
-| Layer | Choice | Why I chose it / Trade-off |
-| :--- | :--- | :--- |
-| **Framework** | React 19 + TypeScript + Vite | Instant sub-second HMR, rock-solid type safety, and clean component isolation. |
-| **Animations** | Framer Motion | Smooth slide transitions between questions and expanding accordion bodies without layout jank. |
-| **Styling** | Vanilla CSS with Design Tokens | Maximum control over micro-animations, glassmorphism, responsive breakpoints, and dark/light accents without heavy CSS framework runtime. |
-| **Voice Engine** | Native Web Speech API + Regex/Alias Matcher | **Bought (Off-the-shelf):** Zero latency, zero API costs, runs 100% locally on the device without network dependencies. |
-| **Output** | Exact `intake-schema.json` compliant JSON | Live collapsible structured viewer on the review screen for clinical integration verification. |
+## How I checked the fill
 
----
+1. Female + PCOS: JSON has irregular cycle, acne true, extra hair true, and section B includes menstrual/pregnancy keys.
+2. Male: section B has no menstrual_cycle / pregnancy_related; Q6/Q7 never shown.
+3. “Not yet” on products/procedures: every product `used: false`, every procedure `done: false`.
+4. “None of these” on last 6 months: `past_6_months: []`.
+5. Smoking yes without severity, or salon yes without text: Next stays disabled.
+6. Review JSON compared against the schema options for every multi/single field.
 
-## 🧪 How I Tested It
+## With one more week
 
-1. **Schema Compliance:** Validated the JSON structure generated in `ReviewScreen.tsx` against the provided `intake-schema.json` across multiple edge cases (e.g., male patient skipping Q6/Q7, multi-select combinations, empty optional side-effect text).
-2. **Device & Screen Testing:** Tested across 320px (small phones), 390px (iPhone 14/15), 768px (iPad/tablets), and 1440px (desktop monitor) to ensure the card layout stays centered and thumb-accessible.
-3. **Voice Accents & Edge Cases:** Tested speech recognition with both standard English and Hinglish phrases, spoken quickly, and spoken with multiple options in one sentence.
-
----
-
-## 🔮 What I Would Build With One More Week
-
-1. **Whisper API Fallback:** Add a server-side OpenAI Whisper fallback for older browsers that lack native `webkitSpeechRecognition` or for extremely noisy clinic environments.
-2. **AI Scalp Photo Pre-Screening:** Integrate a lightweight computer vision classifier on the optional scalp photo upload to pre-estimate the Norwood / Ludwig hair loss grade before the doctor sees the patient.
-3. **WhatsApp / SMS Intake Link:** Generate a tokenized one-time magic link sent via WhatsApp 2 hours before the patient's appointment, syncing directly to the clinic's EMR.
-4. **Offline PWA Support:** Add service worker caching so clinic tablets in basement rooms with poor Wi-Fi can run the intake completely offline and sync when reconnected.
+- WhatsApp magic link so this is done at home, not in the waiting room.
+- Whisper fallback for noisy rooms / browsers without Web Speech.
+- Optional scalp photo that *sets* pattern (Norwood / Ludwig), not a dead upload.
+- PWA cache for clinic tablets with bad Wi-Fi.

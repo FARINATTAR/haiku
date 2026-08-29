@@ -10,10 +10,10 @@ interface WelcomeScreenProps {
   onContinue: () => void;
 }
 
-const sexOptions: { value: Sex; label: string; desc: string }[] = [
-  { value: 'male', label: 'Male', desc: 'Biological male' },
-  { value: 'female', label: 'Female', desc: 'Biological female' },
-  { value: 'other', label: 'Other', desc: 'Non-binary / Other' },
+const whoOptions: { value: Sex; label: string; desc: string }[] = [
+  { value: 'female', label: 'A woman', desc: 'Includes cycle / pregnancy questions' },
+  { value: 'male', label: 'A man', desc: 'Skips those questions' },
+  { value: 'other', label: 'Skip those', desc: 'Prefer not to say' },
 ];
 
 export function WelcomeScreen({
@@ -28,33 +28,29 @@ export function WelcomeScreen({
   return (
     <motion.div
       className="welcome"
-      initial={{ opacity: 0, y: 15 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -15 }}
-      transition={{ duration: 0.35 }}
+      exit={{ opacity: 0, y: -12 }}
+      transition={{ duration: 0.25 }}
     >
       <div className="welcome__header-box">
-        <span className="welcome__tag">Personalized Scalp & Genetics</span>
-        <h1 className="welcome__title">
-          Let's understand your hair better
-        </h1>
+        <h1 className="welcome__title">Hair intake</h1>
         <p className="welcome__subtitle">
-          A 2-minute clinical intake to help your trichologist design your personalized root-cause treatment plan.
+          A few screens. Tap what is true. Your doctor sees the filled form before you walk in.
         </p>
       </div>
 
       <div className="welcome__card">
-        {/* Name Field */}
         <div className="welcome__field">
           <label className="welcome__label" htmlFor="patient-name-input">
-            Full Name <span className="welcome__req">*</span>
+            Your name
           </label>
           <div className="welcome__input-wrapper">
             <input
               id="patient-name-input"
               className="welcome__input"
               type="text"
-              placeholder="e.g. Farin Attar"
+              placeholder="First name is enough"
               value={patientName}
               onChange={(e) => onNameChange(e.target.value)}
               autoFocus
@@ -65,16 +61,13 @@ export function WelcomeScreen({
           </div>
         </div>
 
-        {/* Biological Sex Field */}
         <div className="welcome__field" style={{ marginTop: 20 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
-            <label className="welcome__label">
-              Biological Sex <span className="welcome__req">*</span>
-            </label>
-            <span className="welcome__field-hint">Required for hormonal screening</span>
-          </div>
+          <label className="welcome__label">Who is this for?</label>
+          <p className="welcome__field-hint" style={{ marginBottom: 8 }}>
+            Two questions are only useful if you menstruate. Everyone else skips them.
+          </p>
           <div className="sex-grid">
-            {sexOptions.map((opt) => {
+            {whoOptions.map((opt) => {
               const isSelected = sex === opt.value;
               return (
                 <button
@@ -98,15 +91,11 @@ export function WelcomeScreen({
           onClick={onContinue}
           disabled={!canContinue}
           type="button"
-          style={{ width: '100%', padding: '14px 24px', fontSize: '1rem' }}
+          style={{ width: '100%' }}
         >
-          {canContinue ? 'Begin Hair Intake →' : 'Enter your name & sex to start'}
+          {canContinue ? 'Start' : 'Name and who this is for'}
         </button>
-        <p className="welcome__security-note">
-          🔒 Strictly confidential · Used only for your genetic & clinical analysis
-        </p>
       </div>
     </motion.div>
   );
 }
-

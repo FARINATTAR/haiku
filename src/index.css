@@ -829,23 +829,23 @@ body {
 }
 
 .sex-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 
 .sex-card {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
-  padding: 12px 6px;
+  justify-content: space-between;
+  padding: 12px 14px;
   background: var(--bg-primary);
   border: 1.5px solid var(--border-subtle);
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: all var(--transition-fast);
-  text-align: center;
+  text-align: left;
   -webkit-tap-highlight-color: transparent;
   font-family: inherit;
 }
@@ -1222,8 +1222,7 @@ body {
 }
 
 .voice-btn::before {
-  content: '🎙️';
-  font-size: 0.9rem;
+  content: '';
 }
 
 .voice-btn:hover {
@@ -1245,8 +1244,7 @@ body {
 }
 
 .voice-btn--recording::before {
-  content: '⏺';
-  animation: voice-dot-blink 0.8s steps(2) infinite;
+  content: '';
 }
 
 @keyframes voice-pulse {
@@ -1699,4 +1697,207 @@ body {
   html {
     scroll-behavior: smooth;
   }
+}
+
+.screen-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.voice-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.infer-banner {
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--accent-dark);
+  background: var(--accent-light);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+}
+
+.infer-banner--action {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.infer-banner__btn {
+  align-self: flex-start;
+  border: none;
+  background: var(--accent);
+  color: white;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+}
+
+.none-chip {
+  margin-top: 10px;
+}
+
+.habit-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.habit-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.habit-row .yesno-group {
+  flex: 0 0 148px;
+  min-width: 148px;
+}
+
+.habit-row .yesno-btn {
+  min-height: 40px;
+  font-size: 0.8rem;
+  padding: 6px 8px;
+}
+
+.habit-row__label {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.habit-block {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.habit-block .habit-row__label {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.habit-follow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 0 12px;
+}
+
+.scalp {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.scalp__hint {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.scalp__svg {
+  width: 100%;
+  max-width: 260px;
+  margin: 0 auto;
+  display: block;
+}
+
+.scalp__head {
+  fill: #f3f1eb;
+  stroke: #d8d4cc;
+  stroke-width: 1.5;
+}
+
+.scalp__head--all {
+  fill: #d5ebe7;
+  stroke: var(--accent);
+}
+
+.scalp__zone {
+  fill: rgba(43, 138, 126, 0.12);
+  stroke: var(--accent);
+  stroke-width: 1.2;
+  cursor: pointer;
+}
+
+.scalp__zone:hover {
+  fill: rgba(43, 138, 126, 0.22);
+}
+
+.scalp__zone--on {
+  fill: rgba(43, 138, 126, 0.5);
+}
+
+.scalp__zone--muted {
+  opacity: 0.4;
+}
+
+.scalp__zone-label {
+  font-size: 11px;
+  fill: #1a1a1a;
+  pointer-events: none;
+  font-family: inherit;
+}
+
+.scalp__face-label {
+  font-size: 9px;
+  fill: #a0a0a0;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.scalp__legend {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.scalp__chip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  padding: 10px 12px;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: inherit;
+  min-height: 52px;
+}
+
+.scalp__chip--on {
+  background: var(--accent-light);
+  border-color: var(--accent);
+}
+
+.scalp__chip--muted {
+  opacity: 0.55;
+}
+
+.scalp__chip-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.scalp__chip-hint {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.scalp__extra {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }

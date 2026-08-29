@@ -1,30 +1,24 @@
-import { motion } from 'framer-motion';
 import type { FormStep } from '../types';
+import { PATIENT_STEPS } from '../types';
 
 interface ProgressBarProps {
   currentStep: FormStep;
-  totalQuestions: number;
 }
 
-export function ProgressBar({ currentStep, totalQuestions }: ProgressBarProps) {
-  if (currentStep === 0) return null; // welcome screen
+export function ProgressBar({ currentStep }: ProgressBarProps) {
+  if (currentStep === 'welcome') return null;
 
-  const isReview = currentStep > totalQuestions;
-  const progress = isReview ? 100 : ((currentStep - 1) / totalQuestions) * 100;
+  const idx = PATIENT_STEPS.indexOf(currentStep);
+  const isReview = currentStep === 'review';
+  const progress = isReview ? 100 : ((idx + 1) / PATIENT_STEPS.length) * 100;
+  const label = isReview ? 'Review' : `${idx + 1} of ${PATIENT_STEPS.length}`;
 
   return (
     <div className="progress-container">
       <div className="progress-bar">
-        <motion.div
-          className="progress-bar__fill"
-          initial={false}
-          animate={{ width: `${progress}%` }}
-          transition={{ duration: 0.3, ease: 'easeOut' }}
-        />
+        <div className="progress-bar__fill" style={{ width: `${progress}%` }} />
       </div>
-      <span className="progress-bar__label">
-        {isReview ? 'Review' : `${currentStep} of ${totalQuestions}`}
-      </span>
+      <span className="progress-bar__label">{label}</span>
     </div>
   );
 }

@@ -7,11 +7,12 @@ interface NumberInputProps {
   min?: number;
   max?: number;
   unit?: string;
+  autoFocus?: boolean;
 }
 
 const commonAges = [18, 21, 25, 28, 32, 38];
 
-export function NumberInput({ value, onChange, min = 1, max = 80, unit = 'years old' }: NumberInputProps) {
+export function NumberInput({ value, onChange, min = 1, max = 80, unit = 'years old', autoFocus = false }: NumberInputProps) {
   const displayValue = value !== null ? value : '';
 
   const increment = () => {
@@ -65,7 +66,7 @@ export function NumberInput({ value, onChange, min = 1, max = 80, unit = 'years 
             max={max}
             placeholder="Age"
             inputMode="numeric"
-            autoFocus
+            autoFocus={autoFocus}
           />
           <span className="number-input__unit-label">{unit}</span>
         </div>

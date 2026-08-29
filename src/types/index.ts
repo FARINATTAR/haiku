@@ -47,7 +47,6 @@ export type ProcedureSessions = '1-3' | '4-6' | '>6';
 
 export type SampleType = 'Saliva' | 'Blood' | 'Either';
 
-// Habits (Q11)
 export interface HabitsData {
   smoking: boolean | null;
   smoking_severity?: SmokingSeverity;
@@ -60,7 +59,6 @@ export interface HabitsData {
   [key: string]: unknown;
 }
 
-// Product row (Q12)
 export interface ProductRow {
   used: boolean;
   duration?: ProductDuration;
@@ -68,65 +66,70 @@ export interface ProductRow {
   side_effects?: boolean;
 }
 
-// Procedure row (Q13)
 export interface ProcedureRow {
   done: boolean;
   sessions?: ProcedureSessions;
   helped?: boolean;
 }
 
-// Complete form state
 export interface IntakeFormData {
-  // Welcome
   patient_name: string;
   sex: Sex | null;
+  /** UI-only — used to infer duration. Not in schema output. */
+  current_age: number | null;
 
-  // Section A: Personal & Family Hair Loss History
-  age_hair_loss_began: number | null;           // Q1
-  duration: Duration | null;                     // Q2
-  family_history: FamilyHistory[];               // Q3
-  pattern: HairLossPattern[];                    // Q4
+  age_hair_loss_began: number | null;
+  duration: Duration | null;
+  family_history: FamilyHistory[];
+  pattern: HairLossPattern[];
 
-  // Section B: Hormonal & Health Influences
-  diagnosed_conditions: DiagnosedCondition[];    // Q5
-  menstrual_cycle: MenstrualCycle | null;        // Q6 (female only)
-  pregnancy_related: PregnancyRelated | null;    // Q7 (female only)
-  adult_acne_oily_skin: boolean | null;          // Q8
-  excess_body_facial_hair: boolean | null;       // Q9
+  diagnosed_conditions: DiagnosedCondition[];
+  menstrual_cycle: MenstrualCycle | null;
+  pregnancy_related: PregnancyRelated | null;
+  adult_acne_oily_skin: boolean | null;
+  excess_body_facial_hair: boolean | null;
 
-  // Section C: Lifestyle & Environmental Triggers
-  past_6_months: PastSixMonthsTrigger[];         // Q10
-  habits: HabitsData;                            // Q11
+  past_6_months: PastSixMonthsTrigger[];
+  past_6_months_none: boolean;
+  habits: HabitsData;
 
-  // Section D: Current Hair Care & Treatments
-  products: {                                    // Q12
+  tried_products: boolean | null;
+  tried_procedures: boolean | null;
+  products: {
     'OTC/Medicated Shampoos': ProductRow;
     'Hair Oils/Serums': ProductRow;
     'Topical Minoxidil': ProductRow;
     'Oral Minoxidil': ProductRow;
     'Supplements': ProductRow;
   };
-  procedures: {                                  // Q13
+  procedures: {
     'PRP/GFC/iPRF': ProcedureRow;
     'Stem Cells/Exosomes': ProcedureRow;
     'Hair Transplant': ProcedureRow;
     'Other': ProcedureRow;
   };
-  past_treatment_side_effects: boolean | null;   // Q14
+  past_treatment_side_effects: boolean | null;
   past_treatment_side_effects_describe?: string;
 
-  // Section E: Sample Collection & Consent
-  sample_type: SampleType | null;                // Q15
-  consent: boolean | null;                       // Q16
+  sample_type: SampleType | null;
+  consent: boolean | null;
 }
 
-// Section metadata for navigation
-export interface Section {
-  id: string;
-  title: string;
-  icon: string;
-  questionRange: [number, number]; // [start, end] inclusive
-}
+export type FormStep =
+  | 'welcome'
+  | 'onset'
+  | 'history'
+  | 'health'
+  | 'lifestyle'
+  | 'treatments'
+  | 'sample'
+  | 'review';
 
-// Step in the form flow: 0=welcome, 1-16=questions, 17=review
-export type FormStep = number;
+export const PATIENT_STEPS: FormStep[] = [
+  'onset',
+  'history',
+  'health',
+  'lifestyle',
+  'treatments',
+  'sample',
+];

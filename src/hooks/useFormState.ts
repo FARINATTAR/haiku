@@ -2,12 +2,12 @@ import { useReducer, useCallback, useEffect } from 'react';
 import type { IntakeFormData, FormStep } from '../types';
 import { INITIAL_FORM_DATA } from '../lib/formConfig';
 
-const STORAGE_KEY = 'genoroot_intake_draft';
+const STORAGE_KEY = 'genoroot_intake_draft_v3';
 
 type FormAction =
   | { type: 'SET_FIELD'; field: string; value: unknown }
   | { type: 'SET_NESTED'; path: string[]; value: unknown }
-  | { type: 'TOGGLE_ARRAY_ITEM'; field: string; item: string }
+  | { type: 'PATCH'; patch: Partial<IntakeFormData> }
   | { type: 'SET_STEP'; step: FormStep }
   | { type: 'RESET' };
 
@@ -16,19 +16,20 @@ interface FormState {
   currentStep: FormStep;
 }
 
-// Try to load saved draft from localStorage
 function loadDraft(): FormState | null {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved) as FormState;
-      // Basic validation: check if it has the expected shape
-      if (parsed.data && typeof parsed.currentStep === 'number') {
-        return parsed;
+      if (parsed.data && typeof parsed.currentStep === 'string') {
+        return {
+          data: { ...INITIAL_FORM_DATA, ...parsed.data },
+          currentStep: parsed.currentStep,
+        };
       }
     }
   } catch {
-    // Ignore parse errors
+    // ignore
   }
   return null;
 }
@@ -37,7 +38,7 @@ function saveDraft(state: FormState) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch {
-    // Ignore quota errors
+    // ignore
   }
 }
 
@@ -45,7 +46,7 @@ function clearDraft() {
   try {
     localStorage.removeItem(STORAGE_KEY);
   } catch {
-    // Ignore
+    // ignore
   }
 }
 
@@ -55,6 +56,12 @@ function formReducer(state: FormState, action: FormAction): FormState {
       return {
         ...state,
         data: { ...state.data, [action.field]: action.value },
+      };
+
+    case 'PATCH':
+      return {
+        ...state,
+        data: { ...state.data, ...action.patch },
       };
 
     case 'SET_NESTED': {
@@ -72,24 +79,12 @@ function formReducer(state: FormState, action: FormAction): FormState {
       return { ...state, data: newData };
     }
 
-    case 'TOGGLE_ARRAY_ITEM': {
-      const arr = (state.data[action.field as keyof IntakeFormData] as string[]) || [];
-      const newArr = arr.includes(action.item)
-        ? arr.filter((i) => i !== action.item)
-        : [...arr, action.item];
-
-      return {
-        ...state,
-        data: { ...state.data, [action.field]: newArr },
-      };
-    }
-
     case 'SET_STEP':
       return { ...state, currentStep: action.step };
 
     case 'RESET':
       clearDraft();
-      return { data: { ...INITIAL_FORM_DATA }, currentStep: 0 };
+      return { data: structuredClone(INITIAL_FORM_DATA), currentStep: 'welcome' };
 
     default:
       return state;
@@ -99,45 +94,32 @@ function formReducer(state: FormState, action: FormAction): FormState {
 function getInitialState(): FormState {
   const draft = loadDraft();
   if (draft) return draft;
-  return { data: { ...INITIAL_FORM_DATA }, currentStep: 0 };
+  return { data: structuredClone(INITIAL_FORM_DATA), currentStep: 'welcome' };
 }
 
 export function useFormState() {
   const [state, dispatch] = useReducer(formReducer, undefined, getInitialState);
 
-  // Auto-save to localStorage on every state change
   useEffect(() => {
     saveDraft(state);
   }, [state]);
 
-  const setField = useCallback(
-    (field: string, value: unknown) => {
-      dispatch({ type: 'SET_FIELD', field, value });
-    },
-    []
-  );
+  const setField = useCallback((field: string, value: unknown) => {
+    dispatch({ type: 'SET_FIELD', field, value });
+  }, []);
 
-  const setNested = useCallback(
-    (path: string[], value: unknown) => {
-      dispatch({ type: 'SET_NESTED', path, value });
-    },
-    []
-  );
+  const setNested = useCallback((path: string[], value: unknown) => {
+    dispatch({ type: 'SET_NESTED', path, value });
+  }, []);
 
-  const toggleArrayItem = useCallback(
-    (field: string, item: string) => {
-      dispatch({ type: 'TOGGLE_ARRAY_ITEM', field, item });
-    },
-    []
-  );
+  const patch = useCallback((next: Partial<IntakeFormData>) => {
+    dispatch({ type: 'PATCH', patch: next });
+  }, []);
 
-  const setStep = useCallback(
-    (step: FormStep) => {
-      dispatch({ type: 'SET_STEP', step });
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    },
-    []
-  );
+  const setStep = useCallback((step: FormStep) => {
+    dispatch({ type: 'SET_STEP', step });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   const reset = useCallback(() => {
     dispatch({ type: 'RESET' });
@@ -148,7 +130,7 @@ export function useFormState() {
     currentStep: state.currentStep,
     setField,
     setNested,
-    toggleArrayItem,
+    patch,
     setStep,
     reset,
   };

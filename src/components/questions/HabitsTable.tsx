@@ -1,8 +1,5 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import type { HabitsData } from '../../types';
 import { YesNoToggle } from './YesNoToggle';
-import { SingleSelect } from './SingleSelect';
 import { VoiceButton } from '../ui/VoiceButton';
 
 interface HabitsTableProps {
@@ -10,175 +7,108 @@ interface HabitsTableProps {
   onChange: (path: string[], value: unknown) => void;
 }
 
-interface HabitConfig {
-  key: string;
-  label: string;
-  type: 'yesno' | 'select';
-  options?: { value: string; label: string }[];
-  followup?: {
-    key: string;
-    label: string;
-    type: 'select' | 'text';
-    options?: { value: string; label: string }[];
-  };
-}
+const WASH = [
+  { value: 'Daily', label: 'Daily' },
+  { value: 'Alternate Days', label: 'Every other day' },
+  { value: 'Weekly', label: 'Weekly' },
+];
 
-const HABITS: HabitConfig[] = [
-  {
-    key: 'smoking',
-    label: 'Smoking',
-    type: 'yesno',
-    followup: {
-      key: 'smoking_severity',
-      label: 'How much?',
-      type: 'select',
-      options: [
-        { value: 'Mild <5/day', label: 'Light (<5/day)' },
-        { value: 'Moderate 5-10/day', label: 'Moderate (5-10/day)' },
-        { value: 'Severe >10/day', label: 'Heavy (>10/day)' },
-      ],
-    },
-  },
-  {
-    key: 'alcohol',
-    label: 'Alcohol consumption',
-    type: 'yesno',
-  },
-  {
-    key: 'hard_water',
-    label: 'Hard water for hair wash',
-    type: 'yesno',
-  },
-  {
-    key: 'hair_wash_frequency',
-    label: 'Hair wash frequency',
-    type: 'select',
-    options: [
-      { value: 'Daily', label: 'Daily' },
-      { value: 'Alternate Days', label: 'Alternate Days' },
-      { value: 'Weekly', label: 'Weekly' },
-    ],
-  },
-  {
-    key: 'heating_tools_styling_chemicals',
-    label: 'Heating tools or styling chemicals',
-    type: 'yesno',
-  },
-  {
-    key: 'salon_treatments',
-    label: 'Salon treatments (keratin, rebonding etc.)',
-    type: 'yesno',
-    followup: {
-      key: 'salon_treatment_detail',
-      label: 'Which treatments?',
-      type: 'text',
-    },
-  },
+const SMOKE = [
+  { value: 'Mild <5/day', label: 'Under 5/day' },
+  { value: 'Moderate 5-10/day', label: '5–10/day' },
+  { value: 'Severe >10/day', label: 'Over 10/day' },
 ];
 
 export function HabitsTable({ habits, onChange }: HabitsTableProps) {
-  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
-
   return (
-    <div>
-      {HABITS.map((habit, i) => {
-        const isExpanded = expandedIndex === i;
-        const value = habits[habit.key];
-        const hasFollowup = habit.followup && value === true;
-        const isActive = value !== null && value !== undefined;
-
-        return (
-          <motion.div
-            key={habit.key}
-            className={`expand-card ${isActive ? 'expand-card--active' : ''}`}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
-          >
-            <div
-              className="expand-card__header"
-              onClick={() => setExpandedIndex(isExpanded ? null : i)}
+    <div className="habit-list">
+      <div className="habit-row">
+        <span className="habit-row__label">Smoking</span>
+        <YesNoToggle
+          value={typeof habits.smoking === 'boolean' ? habits.smoking : null}
+          onChange={(v) => onChange(['habits', 'smoking'], v)}
+        />
+      </div>
+      {habits.smoking === true && (
+        <div className="habit-follow">
+          {SMOKE.map((o) => (
+            <button
+              key={o.value}
+              type="button"
+              className={`chip ${habits.smoking_severity === o.value ? 'chip--selected' : ''}`}
+              onClick={() => onChange(['habits', 'smoking_severity'], o.value)}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span className="expand-card__title">{habit.label}</span>
-              </div>
-              <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', transition: 'transform 200ms' }}>
-                {isExpanded ? '▲' : '▼'}
-              </span>
-            </div>
+              {o.label}
+            </button>
+          ))}
+        </div>
+      )}
 
-            <AnimatePresence>
-              {isExpanded && (
-                <motion.div
-                  className="expand-card__body"
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  {habit.type === 'yesno' && (
-                    <YesNoToggle
-                      value={typeof value === 'boolean' ? value : null}
-                      onChange={(v) => onChange(['habits', habit.key], v)}
-                    />
-                  )}
+      <div className="habit-row">
+        <span className="habit-row__label">Alcohol</span>
+        <YesNoToggle
+          value={typeof habits.alcohol === 'boolean' ? habits.alcohol : null}
+          onChange={(v) => onChange(['habits', 'alcohol'], v)}
+        />
+      </div>
 
-                  {habit.type === 'select' && habit.options && (
-                    <SingleSelect
-                      options={habit.options}
-                      value={typeof value === 'string' ? value : null}
-                      onChange={(v) => onChange(['habits', habit.key], v)}
-                    />
-                  )}
+      <div className="habit-row">
+        <span className="habit-row__label">Hard water</span>
+        <YesNoToggle
+          value={typeof habits.hard_water === 'boolean' ? habits.hard_water : null}
+          onChange={(v) => onChange(['habits', 'hard_water'], v)}
+        />
+      </div>
 
-                  {/* Follow-up */}
-                  <AnimatePresence>
-                    {hasFollowup && habit.followup && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        style={{ marginTop: 12 }}
-                      >
-                        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: 8 }}>
-                          {habit.followup.label}
-                        </p>
+      <div className="habit-block">
+        <span className="habit-row__label">Hair wash</span>
+        <div className="chips">
+          {WASH.map((o) => (
+            <button
+              key={o.value}
+              type="button"
+              className={`chip ${habits.hair_wash_frequency === o.value ? 'chip--selected' : ''}`}
+              onClick={() => onChange(['habits', 'hair_wash_frequency'], o.value)}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
-                        {habit.followup.type === 'select' && habit.followup.options && (
-                          <SingleSelect
-                            options={habit.followup.options}
-                            value={typeof habits[habit.followup.key] === 'string' ? (habits[habit.followup.key] as string) : null}
-                            onChange={(v) => onChange(['habits', habit.followup!.key], v)}
-                          />
-                        )}
+      <div className="habit-row">
+        <span className="habit-row__label">Heat / chemicals</span>
+        <YesNoToggle
+          value={typeof habits.heating_tools_styling_chemicals === 'boolean' ? habits.heating_tools_styling_chemicals : null}
+          onChange={(v) => onChange(['habits', 'heating_tools_styling_chemicals'], v)}
+        />
+      </div>
 
-                        {habit.followup.type === 'text' && (
-                          <>
-                            <textarea
-                              className="text-input"
-                              placeholder="e.g., Keratin treatment 3 months ago..."
-                              value={typeof habits[habit.followup.key] === 'string' ? (habits[habit.followup.key] as string) : ''}
-                              onChange={(e) => onChange(['habits', habit.followup!.key], e.target.value)}
-                              rows={2}
-                              style={{ minHeight: 60 }}
-                            />
-                            <VoiceButton
-                              onResult={(text) => {
-                                const current = typeof habits[habit.followup!.key] === 'string' ? (habits[habit.followup!.key] as string) : '';
-                                onChange(['habits', habit.followup!.key], current ? `${current} ${text}` : text);
-                              }}
-                            />
-                          </>
-                        )}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-        );
-      })}
+      <div className="habit-row">
+        <span className="habit-row__label">Salon treatments</span>
+        <YesNoToggle
+          value={typeof habits.salon_treatments === 'boolean' ? habits.salon_treatments : null}
+          onChange={(v) => onChange(['habits', 'salon_treatments'], v)}
+        />
+      </div>
+      {habits.salon_treatments === true && (
+        <div className="habit-follow">
+          <textarea
+            className="text-input"
+            placeholder="Keratin, rebonding, smoothening…"
+            value={typeof habits.salon_treatment_detail === 'string' ? habits.salon_treatment_detail : ''}
+            onChange={(e) => onChange(['habits', 'salon_treatment_detail'], e.target.value)}
+            rows={2}
+            style={{ minHeight: 56 }}
+          />
+          <VoiceButton
+            onResult={(text) => {
+              const current = typeof habits.salon_treatment_detail === 'string' ? habits.salon_treatment_detail : '';
+              onChange(['habits', 'salon_treatment_detail'], current ? `${current} ${text}` : text);
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }

@@ -45,9 +45,7 @@ export function SuccessScreen({ patientName, data, lang = 'en', onReset }: Succe
       </h1>
 
       <p className="welcome__subtitle">
-        {hi
-          ? 'Aapka intake form successfully submit ho gaya hai.'
-          : 'Your intake form has been submitted successfully.'}
+        {hi ? 'Doctor ke paas filled form pehle se hoga.' : 'The filled form is ready for your doctor.'}
       </p>
 
       {/* Doctor summary card */}
@@ -93,7 +91,7 @@ export function SuccessScreen({ patientName, data, lang = 'en', onReset }: Succe
           boxShadow: 'var(--shadow-card)',
         }}>
           <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: 12, fontWeight: 500 }}>
-            {hi ? 'Ab aage kya hoga?' : 'What happens next?'}
+            {hi ? 'Ab aage kya hoga' : 'What happens next'}
           </p>
           <ul style={{ fontSize: '0.85rem', color: 'var(--text-primary)', listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
             <li style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
