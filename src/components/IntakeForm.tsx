@@ -16,9 +16,50 @@ import { ProductTable } from './questions/ProductTable';
 import { ProcedureTable } from './questions/ProcedureTable';
 import { ScalpPhotoUpload } from './questions/ScalpPhotoUpload';
 import { VoiceButton } from './ui/VoiceButton';
-import { matchVoiceToOption, extractNumberFromVoice } from '../lib/voiceMatcher';
+import { matchVoiceToOption, extractNumberFromVoice, parseDurationVoice } from '../lib/voiceMatcher';
 
 const REVIEW_STEP = 17;
+
+function isStepValid(step: number, data: IntakeFormData): boolean {
+  switch (step) {
+    case 0:
+      return data.patient_name.trim().length > 0 && data.sex !== null;
+    case 1:
+      return data.age_hair_loss_began !== null && data.age_hair_loss_began >= 1 && data.age_hair_loss_began <= 99;
+    case 2:
+      return data.duration !== null;
+    case 3:
+      return data.family_history.length > 0;
+    case 4:
+      return data.pattern.length > 0;
+    case 5:
+      return data.diagnosed_conditions.length > 0;
+    case 6:
+      return data.menstrual_cycle !== null;
+    case 7:
+      return data.pregnancy_related !== null;
+    case 8:
+      return data.adult_acne_oily_skin !== null;
+    case 9:
+      return data.excess_body_facial_hair !== null;
+    case 10:
+      return true; // past 6 months events (can be empty if none happened)
+    case 11:
+      return true; // habits table has defaults
+    case 12:
+      return true; // product table optional
+    case 13:
+      return true; // procedure table optional
+    case 14:
+      return data.past_treatment_side_effects !== null;
+    case 15:
+      return data.sample_type !== null;
+    case 16:
+      return data.consent === true;
+    default:
+      return true;
+  }
+}
 
 const slideVariants = {
   enter: (direction: number) => ({
@@ -66,6 +107,9 @@ export function IntakeForm() {
   const totalQuestions = questionList.length;
 
   const goNext = useCallback(() => {
+    if (currentStep >= 1 && currentStep <= 16 && !isStepValid(currentStep, data)) {
+      return;
+    }
     setDirection(1);
     if (currentStep === 0) {
       setStep(questionList[0]);
@@ -77,7 +121,7 @@ export function IntakeForm() {
         setStep(REVIEW_STEP);
       }
     }
-  }, [currentStep, questionList, setStep]);
+  }, [currentStep, data, questionList, setStep]);
 
   const goBack = () => {
     setDirection(-1);
@@ -97,16 +141,16 @@ export function IntakeForm() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Enter' && currentStep >= 1 && currentStep <= 16) {
-        // Don't trigger if user is typing in a textarea
         const tag = (e.target as HTMLElement)?.tagName;
         if (tag === 'TEXTAREA') return;
+        if (!isStepValid(currentStep, data)) return;
         e.preventDefault();
         goNext();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentStep, goNext]);
+  }, [currentStep, data, goNext]);
 
   const renderQuestionInput = (num: number) => {
     switch (num) {
@@ -125,9 +169,9 @@ export function IntakeForm() {
         return (
           <SingleSelect
             options={[
-              { value: 'Less than 6 months', label: 'Under 6 months' },
-              { value: '6-12 months', label: '6–12 months' },
-              { value: 'Over a year', label: 'Over a year' },
+              { value: 'Less than 6 months', label: 'Under 6 months', desc: 'Recent onset or sudden acute shedding' },
+              { value: '6-12 months', label: '6–12 months', desc: 'Moderate duration (months of thinning)' },
+              { value: 'Over a year', label: 'Over a year', desc: 'Long-term progressive gradual hair loss' },
             ]}
             value={data.duration}
             onChange={(v) => setField('duration', v as Duration)}
@@ -139,17 +183,18 @@ export function IntakeForm() {
         return (
           <MultiSelect
             options={[
-              { value: 'Father had hair loss', label: 'Father' },
-              { value: 'Mother had hair loss', label: 'Mother' },
-              { value: 'Siblings with thinning or baldness', label: 'Siblings' },
-              { value: 'No known family history', label: 'None that I know of' },
+              { value: 'Father had hair loss', label: 'Father', desc: 'Receding hairline or crown balding' },
+              { value: 'Mother had hair loss', label: 'Mother', desc: 'Widening part or overall crown thinning' },
+              { value: 'Siblings with thinning or baldness', label: 'Siblings', desc: 'Brother or sister with hair thinning' },
+              { value: 'Other relative with hair loss', label: 'Other relative', desc: 'Grandparents, uncles or aunts' },
+              { value: 'No known family history', label: 'None that I know of', desc: 'No close relatives with hair loss history' },
             ]}
             selected={data.family_history}
             onToggle={(val) => {
               const v = val as FamilyHistory;
               if (v === 'No known family history') {
                 if (data.family_history.includes(v)) {
-                  toggleArrayItem('family_history', v);
+                  setField('family_history', []);
                 } else {
                   setField('family_history', [v]);
                 }
@@ -169,12 +214,42 @@ export function IntakeForm() {
         return (
           <MultiSelect
             options={[
-              { value: 'Receding hairline', label: 'Receding hairline' },
-              { value: 'Thinning at crown', label: 'Thinning at crown' },
-              { value: 'Widening part line', label: 'Widening part' },
-              { value: 'Diffuse thinning', label: 'Overall thinning' },
-              { value: 'Patchy loss', label: 'Patchy loss' },
-              { value: 'Sudden excessive shedding', label: 'Excessive shedding' },
+              {
+                value: 'Receding hairline',
+                label: 'Receding hairline',
+                desc: 'Temples or forehead moving backward',
+                info: 'Hairline is progressively moving back from the forehead and sides, forming an M or V pattern.',
+              },
+              {
+                value: 'Thinning at crown',
+                label: 'Thinning at crown',
+                desc: 'Vertex or top-back of head',
+                info: 'Noticeable reduction in hair density or visible bald patch at the top-back vertex area.',
+              },
+              {
+                value: 'Widening part line',
+                label: 'Widening part line',
+                desc: 'Central parting looking broader',
+                info: 'The central line where your hair naturally separates looks broader with more scalp exposed.',
+              },
+              {
+                value: 'Diffuse thinning',
+                label: 'Diffuse thinning',
+                desc: 'Overall hair loss all across the scalp',
+                info: 'Uniform reduction in hair volume and thickness all across your head without specific patches.',
+              },
+              {
+                value: 'Patchy loss',
+                label: 'Patchy loss',
+                desc: 'Smooth coin-shaped bald spots',
+                info: 'Round, smooth coin-sized bald spots that appear suddenly (characteristic of Alopecia Areata).',
+              },
+              {
+                value: 'Sudden excessive shedding',
+                label: 'Sudden excessive shedding',
+                desc: 'Losing handfuls/clumps in shower',
+                info: 'Rapid large-volume shedding triggered 2-3 months after illness, fever, crash diet, or stress.',
+              },
             ]}
             selected={data.pattern}
             onToggle={(v) => toggleArrayItem('pattern', v as HairLossPattern)}
@@ -185,19 +260,48 @@ export function IntakeForm() {
         return (
           <MultiSelect
             options={[
-              { value: 'PCOS/PCOD', label: 'PCOS / PCOD' },
-              { value: 'Thyroid disorder', label: 'Thyroid disorder' },
-              { value: 'Diabetes', label: 'Diabetes' },
-              { value: 'Autoimmune disease', label: 'Autoimmune disease' },
-              { value: 'Anemia', label: 'Anemia' },
-              { value: 'None', label: 'None of these' },
+              {
+                value: 'PCOS/PCOD',
+                label: 'PCOS / PCOD',
+                desc: 'Polycystic Ovary Syndrome',
+                info: 'Elevated androgens and insulin resistance cause hair follicle miniaturization.',
+              },
+              {
+                value: 'Thyroid disorder',
+                label: 'Thyroid disorder',
+                desc: 'Hypo or Hyper-thyroidism',
+                info: 'Thyroid hormone imbalance disrupts the hair growth cycle, causing brittle shedding.',
+              },
+              {
+                value: 'Diabetes',
+                label: 'Diabetes',
+                desc: 'High blood sugar / insulin resistance',
+                info: 'High blood sugar impairs micro-capillary circulation supplying nutrients to hair roots.',
+              },
+              {
+                value: 'Autoimmune disease',
+                label: 'Autoimmune disease',
+                desc: 'e.g. Hashimoto, Lupus, Rheumatoid',
+                info: 'The immune system mistakenly targets and inflames hair follicle tissues.',
+              },
+              {
+                value: 'Anemia',
+                label: 'Anemia / Low Ferritin',
+                desc: 'Iron deficiency',
+                info: 'Iron & ferritin are essential co-factors for hair matrix cell proliferation.',
+              },
+              {
+                value: 'None',
+                label: 'None of these',
+                desc: 'No known diagnosed health conditions',
+              },
             ]}
             selected={data.diagnosed_conditions}
             onToggle={(val) => {
               const v = val as DiagnosedCondition;
               if (v === 'None') {
                 if (data.diagnosed_conditions.includes(v)) {
-                  toggleArrayItem('diagnosed_conditions', v);
+                  setField('diagnosed_conditions', []);
                 } else {
                   setField('diagnosed_conditions', [v]);
                 }
@@ -371,13 +475,9 @@ export function IntakeForm() {
         break;
       }
       case 2: {
-        const opt = matchVoiceToOption(text, [
-          { value: 'Less than 6 months', label: 'Under 6 months' },
-          { value: '6-12 months', label: '6-12 months' },
-          { value: 'Over a year', label: 'Over a year' },
-        ]);
-        if (opt) {
-          setField('duration', opt as Duration);
+        const durationMatch = parseDurationVoice(text);
+        if (durationMatch) {
+          setField('duration', durationMatch);
           setTimeout(() => goNext(), 400);
         }
         break;
@@ -387,10 +487,20 @@ export function IntakeForm() {
           { value: 'Father had hair loss', label: 'Father' },
           { value: 'Mother had hair loss', label: 'Mother' },
           { value: 'Siblings with thinning or baldness', label: 'Siblings' },
+          { value: 'Other relative with hair loss', label: 'Other relative' },
           { value: 'No known family history', label: 'None' },
         ]);
         if (opt) {
-          toggleArrayItem('family_history', opt);
+          if (opt === 'No known family history') {
+            setField('family_history', ['No known family history']);
+          } else {
+            const withoutNone = data.family_history.filter((f) => f !== 'No known family history');
+            if ((withoutNone as string[]).includes(opt)) {
+              setField('family_history', withoutNone.filter((f) => f !== opt));
+            } else {
+              setField('family_history', [...withoutNone, opt as FamilyHistory]);
+            }
+          }
         }
         break;
       }
@@ -418,7 +528,16 @@ export function IntakeForm() {
           { value: 'None', label: 'None' },
         ]);
         if (opt) {
-          toggleArrayItem('diagnosed_conditions', opt);
+          if (opt === 'None') {
+            setField('diagnosed_conditions', ['None']);
+          } else {
+            const withoutNone = data.diagnosed_conditions.filter((f) => f !== 'None');
+            if ((withoutNone as string[]).includes(opt)) {
+              setField('diagnosed_conditions', withoutNone.filter((f) => f !== opt));
+            } else {
+              setField('diagnosed_conditions', [...withoutNone, opt as DiagnosedCondition]);
+            }
+          }
         }
         break;
       }
@@ -492,6 +611,7 @@ export function IntakeForm() {
     const subtitle = lang === 'hi' ? (QUESTION_SUBTITLES_HINGLISH[qNum] || QUESTION_SUBTITLES[qNum]) : QUESTION_SUBTITLES[qNum];
     const helper = lang === 'hi' ? (QUESTION_HELPERS_HINGLISH[qNum] || QUESTION_HELPERS[qNum]) : QUESTION_HELPERS[qNum];
     const isLastQuestion = questionList.indexOf(qNum) === questionList.length - 1;
+    const isCurrentValid = isStepValid(qNum, data);
 
     return (
       <>
@@ -528,7 +648,12 @@ export function IntakeForm() {
           <button className="btn btn--secondary" onClick={goBack} type="button">
             {lang === 'hi' ? 'Peeche' : 'Back'}
           </button>
-          <button className="btn btn--primary" onClick={goNext} type="button">
+          <button
+            className="btn btn--primary"
+            onClick={goNext}
+            disabled={!isCurrentValid}
+            type="button"
+          >
             {isLastQuestion ? (lang === 'hi' ? 'Review Karein' : 'Review') : (lang === 'hi' ? 'Aage' : 'Next')}
           </button>
         </div>
