@@ -93,6 +93,74 @@ export function matchVoiceToOption(spokenText: string, options: { value: string;
   return null;
 }
 
+/**
+ * Like matchVoiceToOption but returns ALL matching options from a single spoken input.
+ * e.g. "receding hairline and widening part line" → ['Receding hairline', 'Widening part line']
+ */
+export function matchVoiceToMultiple(spokenText: string, options: { value: string; label: string; aliases?: string[] }[]): string[] {
+  const text = spokenText.toLowerCase().trim();
+  const matched: string[] = [];
+
+  // "None" / exclusive options — if detected, return only that
+  if (text.includes('kisi ko nahi') || text.includes('kuch nahi') || text === 'none' || text === 'no one' || text === 'nobody') {
+    const noneOpt = options.find((o) => o.value.toLowerCase().includes('none') || o.value.toLowerCase().includes('no known'));
+    if (noneOpt) return [noneOpt.value];
+  }
+
+  // Family-specific keyword matching
+  const familyKeywords: Record<string, string> = {
+    papa: 'father', pitaji: 'father', father: 'father', dad: 'father',
+    mummy: 'mother', mother: 'mother', mom: 'mother', mataji: 'mother', maa: 'mother',
+    bhai: 'sibling', behen: 'sibling', sibling: 'sibling', brother: 'sibling', sister: 'sibling',
+    other: 'other', relative: 'other', uncle: 'other', aunt: 'other', grandparent: 'other', dada: 'other', dadi: 'other', nana: 'other', nani: 'other',
+  };
+
+  for (const [keyword, matchKey] of Object.entries(familyKeywords)) {
+    if (text.includes(keyword)) {
+      const opt = options.find((o) => o.value.toLowerCase().includes(matchKey));
+      if (opt && !matched.includes(opt.value)) {
+        matched.push(opt.value);
+      }
+    }
+  }
+
+  // General substring matching — check each option's label and value against the text
+  for (const opt of options) {
+    if (matched.includes(opt.value)) continue;
+    const label = opt.label.toLowerCase();
+    const val = opt.value.toLowerCase();
+
+    // Check if the spoken text contains the label or value
+    if (text.includes(label) || text.includes(val)) {
+      matched.push(opt.value);
+      continue;
+    }
+
+    // Check aliases if provided
+    if (opt.aliases) {
+      for (const alias of opt.aliases) {
+        if (text.includes(alias.toLowerCase())) {
+          matched.push(opt.value);
+          break;
+        }
+      }
+    }
+
+    // Check individual significant words from label (3+ chars) against the text
+    const labelWords = label.split(/\s+/).filter(w => w.length >= 3);
+    // If label has 2+ significant words, check if at least 2 appear in the spoken text
+    if (labelWords.length >= 2) {
+      const wordMatches = labelWords.filter(w => text.includes(w));
+      if (wordMatches.length >= 2 && !matched.includes(opt.value)) {
+        matched.push(opt.value);
+      }
+    }
+  }
+
+  return matched;
+}
+
+
 export function extractNumberFromVoice(spokenText: string): number | null {
   const text = spokenText.toLowerCase().trim();
 

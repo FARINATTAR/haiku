@@ -16,7 +16,7 @@ import { ProductTable } from './questions/ProductTable';
 import { ProcedureTable } from './questions/ProcedureTable';
 import { ScalpPhotoUpload } from './questions/ScalpPhotoUpload';
 import { VoiceButton } from './ui/VoiceButton';
-import { matchVoiceToOption, extractNumberFromVoice, parseDurationVoice } from '../lib/voiceMatcher';
+import { matchVoiceToOption, matchVoiceToMultiple, extractNumberFromVoice, parseDurationVoice } from '../lib/voiceMatcher';
 
 const REVIEW_STEP = 17;
 
@@ -439,9 +439,9 @@ export function IntakeForm() {
         return (
           <div className="consent-card">
             <p className="consent-card__text">
-              I consent to the collection of a biological sample (saliva or blood) for the purpose of
-              genetic analysis related to hair and scalp health. I understand the results will be used
-              to inform my treatment plan at GenoRoot Hair & Scalp.
+              {lang === 'hi'
+                ? 'Main apna biological sample (saliva ya blood) dene ke liye consent deta/deti hoon — hair aur scalp health ke liye genetic analysis ke purpose se. Mujhe samajh hai ki results GenoRoot Hair & Scalp me mere treatment plan ke liye use honge.'
+                : 'I consent to the collection of a biological sample (saliva or blood) for the purpose of genetic analysis related to hair and scalp health. I understand the results will be used to inform my treatment plan at GenoRoot Hair & Scalp.'}
             </p>
             <div
               className={`consent-card__check ${data.consent === true ? 'consent-card__check--agreed' : ''}`}
@@ -453,7 +453,9 @@ export function IntakeForm() {
               className="consent-card__status"
               style={{ color: data.consent === true ? 'var(--accent)' : 'var(--text-muted)' }}
             >
-              {data.consent === true ? 'Consent given' : 'Tap to agree'}
+              {data.consent === true
+                ? (lang === 'hi' ? 'Consent de diya' : 'Consent given')
+                : (lang === 'hi' ? 'Agree karne ke liye tap karein' : 'Tap to agree')}
             </p>
           </div>
         );
@@ -483,60 +485,55 @@ export function IntakeForm() {
         break;
       }
       case 3: {
-        const opt = matchVoiceToOption(text, [
-          { value: 'Father had hair loss', label: 'Father' },
-          { value: 'Mother had hair loss', label: 'Mother' },
-          { value: 'Siblings with thinning or baldness', label: 'Siblings' },
-          { value: 'Other relative with hair loss', label: 'Other relative' },
-          { value: 'No known family history', label: 'None' },
+        const matches = matchVoiceToMultiple(text, [
+          { value: 'Father had hair loss', label: 'Father', aliases: ['papa', 'dad', 'pitaji'] },
+          { value: 'Mother had hair loss', label: 'Mother', aliases: ['mummy', 'mom', 'mataji', 'maa'] },
+          { value: 'Siblings with thinning or baldness', label: 'Siblings', aliases: ['bhai', 'behen', 'brother', 'sister'] },
+          { value: 'Other relative with hair loss', label: 'Other relative', aliases: ['uncle', 'aunt', 'dada', 'dadi', 'nana', 'nani'] },
+          { value: 'No known family history', label: 'None', aliases: ['kisi ko nahi', 'no one', 'nobody'] },
         ]);
-        if (opt) {
-          if (opt === 'No known family history') {
+        if (matches.length > 0) {
+          if (matches.includes('No known family history')) {
             setField('family_history', ['No known family history']);
           } else {
             const withoutNone = data.family_history.filter((f) => f !== 'No known family history');
-            if ((withoutNone as string[]).includes(opt)) {
-              setField('family_history', withoutNone.filter((f) => f !== opt));
-            } else {
-              setField('family_history', [...withoutNone, opt as FamilyHistory]);
-            }
+            const newSet = new Set([...withoutNone, ...matches as FamilyHistory[]]);
+            setField('family_history', [...newSet]);
           }
         }
         break;
       }
       case 4: {
-        const opt = matchVoiceToOption(text, [
-          { value: 'Receding hairline', label: 'Receding hairline' },
-          { value: 'Thinning at crown', label: 'Thinning at crown' },
-          { value: 'Widening part line', label: 'Widening part' },
-          { value: 'Diffuse thinning', label: 'Overall thinning' },
-          { value: 'Patchy loss', label: 'Patchy loss' },
-          { value: 'Sudden excessive shedding', label: 'Excessive shedding' },
+        const matches = matchVoiceToMultiple(text, [
+          { value: 'Receding hairline', label: 'Receding hairline', aliases: ['hairline peeche', 'forehead', 'mathe'] },
+          { value: 'Thinning at crown', label: 'Thinning at crown', aliases: ['crown', 'top', 'vertex', 'upar se'] },
+          { value: 'Widening part line', label: 'Widening part', aliases: ['part line', 'maang', 'parting'] },
+          { value: 'Diffuse thinning', label: 'Diffuse thinning', aliases: ['overall', 'sab jagah', 'poore', 'everywhere'] },
+          { value: 'Patchy loss', label: 'Patchy loss', aliases: ['patches', 'coin', 'gol'] },
+          { value: 'Sudden excessive shedding', label: 'Excessive shedding', aliases: ['shedding', 'jhadna', 'clump', 'handful'] },
         ]);
-        if (opt) {
-          toggleArrayItem('pattern', opt);
+        if (matches.length > 0) {
+          const newSet = new Set([...data.pattern, ...matches as HairLossPattern[]]);
+          setField('pattern', [...newSet]);
         }
         break;
       }
       case 5: {
-        const opt = matchVoiceToOption(text, [
-          { value: 'PCOS/PCOD', label: 'PCOS PCOD' },
-          { value: 'Thyroid disorder', label: 'Thyroid' },
-          { value: 'Diabetes', label: 'Diabetes' },
-          { value: 'Autoimmune disease', label: 'Autoimmune' },
-          { value: 'Anemia', label: 'Anemia' },
-          { value: 'None', label: 'None' },
+        const matches = matchVoiceToMultiple(text, [
+          { value: 'PCOS/PCOD', label: 'PCOS PCOD', aliases: ['pcos', 'pcod', 'polycystic'] },
+          { value: 'Thyroid disorder', label: 'Thyroid', aliases: ['thyroid', 'hypothyroid', 'hyperthyroid'] },
+          { value: 'Diabetes', label: 'Diabetes', aliases: ['diabetes', 'sugar', 'insulin'] },
+          { value: 'Autoimmune disease', label: 'Autoimmune', aliases: ['autoimmune', 'lupus', 'hashimoto'] },
+          { value: 'Anemia', label: 'Anemia', aliases: ['anemia', 'iron', 'ferritin', 'khoon ki kami'] },
+          { value: 'None', label: 'None', aliases: ['none', 'kuch nahi', 'koi nahi'] },
         ]);
-        if (opt) {
-          if (opt === 'None') {
+        if (matches.length > 0) {
+          if (matches.includes('None')) {
             setField('diagnosed_conditions', ['None']);
           } else {
             const withoutNone = data.diagnosed_conditions.filter((f) => f !== 'None');
-            if ((withoutNone as string[]).includes(opt)) {
-              setField('diagnosed_conditions', withoutNone.filter((f) => f !== opt));
-            } else {
-              setField('diagnosed_conditions', [...withoutNone, opt as DiagnosedCondition]);
-            }
+            const newSet = new Set([...withoutNone, ...matches as DiagnosedCondition[]]);
+            setField('diagnosed_conditions', [...newSet]);
           }
         }
         break;
@@ -727,13 +724,14 @@ export function IntakeForm() {
           {currentStep === REVIEW_STEP && !isSubmitted && (
             <>
               <div style={{ marginBottom: 20 }}>
-                <p className="section-header__step">Optional</p>
-                <h2 className="question__label" style={{ fontSize: '1.1rem', marginBottom: 6 }}>Upload a scalp photo</h2>
-                <p className="question__subtitle" style={{ marginBottom: 12 }}>Helps your doctor assess your condition before the visit</p>
+                <p className="section-header__step">{lang === 'hi' ? 'Optional' : 'Optional'}</p>
+                <h2 className="question__label" style={{ fontSize: '1.1rem', marginBottom: 6 }}>{lang === 'hi' ? 'Scalp ki photo upload karein' : 'Upload a scalp photo'}</h2>
+                <p className="question__subtitle" style={{ marginBottom: 12 }}>{lang === 'hi' ? 'Aapke doctor ko visit se pehle condition assess karne me madad milegi' : 'Helps your doctor assess your condition before the visit'}</p>
                 <ScalpPhotoUpload onPhotoChange={setScalpPhoto} currentPhoto={scalpPhoto} />
               </div>
               <ReviewScreen
                 data={data}
+                lang={lang}
                 onBack={goBack}
                 onSubmit={() => {
                   console.log('Final form data:', JSON.stringify(buildOutput(data), null, 2));
@@ -749,6 +747,7 @@ export function IntakeForm() {
             <SuccessScreen
               patientName={data.patient_name}
               data={data}
+              lang={lang}
               onReset={() => {
                 reset();
                 setIsSubmitted(false);

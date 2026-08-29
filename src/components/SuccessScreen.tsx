@@ -4,18 +4,21 @@ import type { IntakeFormData } from '../types';
 interface SuccessScreenProps {
   patientName: string;
   data: IntakeFormData;
+  lang?: 'en' | 'hi';
   onReset: () => void;
 }
 
-export function SuccessScreen({ patientName, data, onReset }: SuccessScreenProps) {
+export function SuccessScreen({ patientName, data, lang = 'en', onReset }: SuccessScreenProps) {
+  const hi = lang === 'hi';
+
   // Build a concise doctor-facing summary
   const summaryRows: { label: string; value: string }[] = [
-    { label: 'Hair loss onset', value: data.age_hair_loss_began ? `Age ${data.age_hair_loss_began}` : '—' },
-    { label: 'Duration', value: data.duration || '—' },
-    { label: 'Pattern', value: data.pattern.length > 0 ? data.pattern.join(', ') : '—' },
-    { label: 'Family history', value: data.family_history.length > 0 ? data.family_history.join(', ') : '—' },
-    { label: 'Conditions', value: data.diagnosed_conditions.length > 0 ? data.diagnosed_conditions.join(', ') : '—' },
-    { label: 'Sample', value: data.sample_type || '—' },
+    { label: hi ? 'Shuru hua' : 'Hair loss onset', value: data.age_hair_loss_began ? `Age ${data.age_hair_loss_began}` : '—' },
+    { label: hi ? 'Kitne time se' : 'Duration', value: data.duration || '—' },
+    { label: hi ? 'Pattern' : 'Pattern', value: data.pattern.length > 0 ? data.pattern.join(', ') : '—' },
+    { label: hi ? 'Family history' : 'Family history', value: data.family_history.length > 0 ? data.family_history.join(', ') : '—' },
+    { label: hi ? 'Conditions' : 'Conditions', value: data.diagnosed_conditions.length > 0 ? data.diagnosed_conditions.join(', ') : '—' },
+    { label: hi ? 'Sample' : 'Sample', value: data.sample_type || '—' },
   ];
 
   return (
@@ -38,11 +41,13 @@ export function SuccessScreen({ patientName, data, onReset }: SuccessScreenProps
       </motion.div>
 
       <h1 className="welcome__title">
-        All done, {patientName}!
+        {hi ? `Ho gaya, ${patientName}!` : `All done, ${patientName}!`}
       </h1>
 
       <p className="welcome__subtitle">
-        Your intake form has been submitted successfully.
+        {hi
+          ? 'Aapka intake form successfully submit ho gaya hai.'
+          : 'Your intake form has been submitted successfully.'}
       </p>
 
       {/* Doctor summary card */}
@@ -61,7 +66,7 @@ export function SuccessScreen({ patientName, data, onReset }: SuccessScreenProps
           boxShadow: 'var(--shadow-elevated)',
         }}>
           <p style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>
-            Your profile summary
+            {hi ? 'Aapki profile summary' : 'Your profile summary'}
           </p>
           {summaryRows.map((row) => (
             <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '6px 0', gap: 12 }}>
@@ -87,19 +92,21 @@ export function SuccessScreen({ patientName, data, onReset }: SuccessScreenProps
           textAlign: 'left',
           boxShadow: 'var(--shadow-card)',
         }}>
-          <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: 12, fontWeight: 500 }}>What happens next?</p>
+          <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: 12, fontWeight: 500 }}>
+            {hi ? 'Ab aage kya hoga?' : 'What happens next?'}
+          </p>
           <ul style={{ fontSize: '0.85rem', color: 'var(--text-primary)', listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
             <li style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0 }} />
-              Doctor reviews your profile
+              {hi ? 'Doctor aapki profile review karenge' : 'Doctor reviews your profile'}
             </li>
             <li style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0 }} />
-              Sample collection at your visit
+              {hi ? 'Visit pe sample collection hoga' : 'Sample collection at your visit'}
             </li>
             <li style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0 }} />
-              Personalised treatment plan
+              {hi ? 'Personalised treatment plan milega' : 'Personalised treatment plan'}
             </li>
           </ul>
         </div>
@@ -117,7 +124,7 @@ export function SuccessScreen({ patientName, data, onReset }: SuccessScreenProps
           type="button"
           style={{ width: '100%' }}
         >
-          Start new intake
+          {hi ? 'Naya intake shuru karein' : 'Start new intake'}
         </button>
       </motion.div>
     </motion.div>
